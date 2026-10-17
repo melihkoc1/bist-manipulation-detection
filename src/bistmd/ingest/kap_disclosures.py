@@ -1,7 +1,8 @@
 """KAP bildirimlerinin üst verisini (yayın saati, konu, özet, hisse kodu) indirir.
 
-API sorgu başına en fazla 2.000 kayıt döndürüyor (en yenileri); bu yüzden gün gün
-sorgulanır. Bir gün sınıra ulaşırsa uyarı verilir. Sonuçlar ay bazında parquet
+API sorgu başına en fazla 2.000 kayıt döndürüyor (en yenileri) ve istek sınırı (429)
+uyguluyor. Bu yüzden haftalık pencerelerle sorgulanır; sınıra ulaşan pencere ikiye
+bölünür. 429 gelirse artan sürelerle beklenir. Sonuçlar ay bazında parquet
 dosyalarına yazılır: data/raw/kap_disclosures/YYYY-MM.parquet
 
 Kullanım:
@@ -36,28 +37,46 @@ FIELDS = {
 }
 
 
-def _body(day: str) -> dict:
-    return {"fromDate": day, "toDate": day, "memberType": "IGS", "mkkMemberOidList": [],
+def _body(start: str, end: str) -> dict:
+    return {"fromDate": start, "toDate": end, "memberType": "IGS", "mkkMemberOidList": [],
             "inactiveMkkMemberOidList": [], "disclosureClass": "", "subjectList": [], "isLate": "",
             "mainSector": "", "sector": "", "subSector": "", "marketOid": "", "index": "", "bdkReview": "",
             "bdkMemberOidList": [], "year": "", "term": "", "ruleType": "", "period": "",
             "fromSrc": False, "srcCategory": "", "discIndex": []}
 
 
-def fetch_day(day: pd.Timestamp, session: requests.Session, retries: int = 3) -> list[dict]:
+def _post(start: pd.Timestamp, end: pd.Timestamp, session: requests.Session,
+          pause: float, retries: int = 6) -> list[dict]:
+    """Tek sorgu. 429 (istek sınırı) gelirse 60s, 120s, 240s... bekleyip tekrar dener."""
     for attempt in range(retries):
+        time.sleep(pause)
         try:
-            resp = session.post(URL, json=_body(day.strftime("%Y-%m-%d")), timeout=120)
+            resp = session.post(URL, json=_body(f"{start:%Y-%m-%d}", f"{end:%Y-%m-%d}"), timeout=120)
+            if resp.status_code == 429:
+                raise requests.HTTPError("429", response=resp)
             resp.raise_for_status()
-            rows = resp.json()
-            if len(rows) >= LIMIT:
-                print(f"UYARI: {day:%Y-%m-%d} günü {LIMIT} kayıt sınırına ulaştı, eksik olabilir")
-            return rows
-        except (requests.RequestException, ValueError):
+            return resp.json()
+        except (requests.RequestException, ValueError) as exc:
             if attempt == retries - 1:
                 raise
-            time.sleep(5 * (attempt + 1))
+            wait = 60 * 2 ** attempt if "429" in str(exc) else 10 * (attempt + 1)
+            print(f"  {start:%Y-%m-%d}..{end:%Y-%m-%d}: {exc.__class__.__name__} {exc}, {wait}s bekleniyor")
+            time.sleep(wait)
     return []
+
+
+def fetch_range(start: pd.Timestamp, end: pd.Timestamp, session: requests.Session,
+                pause: float = 2.0) -> list[dict]:
+    """Aralığı tek sorguyla çeker; sonuç 2.000 sınırına ulaşırsa ikiye bölüp tekrar dener."""
+    rows = _post(start, end, session, pause)
+    if len(rows) < LIMIT:
+        return rows
+    if start == end:
+        print(f"UYARI: {start:%Y-%m-%d} günü {LIMIT} kayıt sınırına ulaştı, eksik olabilir")
+        return rows
+    mid = start + (end - start) // 2
+    mid = mid.normalize()
+    return fetch_range(start, mid, session, pause) + fetch_range(mid + pd.Timedelta(days=1), end, session, pause)
 
 
 def to_frame(rows: list[dict]) -> pd.DataFrame:
@@ -72,7 +91,7 @@ def to_frame(rows: list[dict]) -> pd.DataFrame:
     return df.drop_duplicates("disclosure_id")
 
 
-def download(start: str, end: str, refresh: bool = False, pause: float = 0.3) -> None:
+def download(start: str, end: str, refresh: bool = False, pause: float = 2.0) -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
     session.headers.update(HEADERS)
@@ -82,12 +101,13 @@ def download(start: str, end: str, refresh: bool = False, pause: float = 0.3) ->
         # İçinde bulunulan ay her zaman yeniden çekilir
         if path.exists() and not refresh and str(month) != current_month:
             continue
-        days = pd.date_range(max(month.start_time, pd.Timestamp(start)),
-                             min(month.end_time.normalize(), pd.Timestamp(end)), freq="D")
+        m_start = max(month.start_time, pd.Timestamp(start))
+        m_end = min(month.end_time.normalize(), pd.Timestamp(end))
         rows: list[dict] = []
-        for day in days:
-            rows.extend(fetch_day(day, session))
-            time.sleep(pause)
+        # Haftalık pencereler; yoğun haftalar fetch_range içinde bölünür
+        for w_start in pd.date_range(m_start, m_end, freq="7D"):
+            w_end = min(w_start + pd.Timedelta(days=6), m_end)
+            rows.extend(fetch_range(w_start, w_end, session, pause))
         df = to_frame(rows)
         df.to_parquet(path, index=False)
         print(f"{month}: {len(df)} bildirim")
