@@ -23,6 +23,18 @@ python scripts/inventory.py                                   # birleştir + fiy
 ```
 
 Çıktı: `data/interim/inventory.md`, `spk_decisions.parquet`, `spk_cases.parquet`.
+Etiket doğrulaması: [docs/validation_faz0.md](docs/validation_faz0.md).
+
+## Faz 1 — Veri hattı
+
+```bash
+python -c "from bistmd.ingest import universe, prices_isyatirim as p; p.download(sorted(universe.load().ticker))"  # ~4 saat
+python -m bistmd.ingest.kap_disclosures --start 2010-01-01   # KAP bildirimleri (~1-2 saat)
+python -m bistmd.db                                          # data/db/bist.duckdb
+```
+
+KAP bildirimlerinin `effective_date` alanı, bilginin fiyatlanabildiği ilk işlem günüdür
+(18:00 sonrası ve tatil günü bildirimleri bir sonraki işlem gününe atanır).
 
 ## Veri kaynakları
 
@@ -31,6 +43,7 @@ python scripts/inventory.py                                   # birleştir + fiy
 | SPK kararları | idariyaptirimlar.spk.gov.tr API + SPK bültenleri | Bültenler dönem bilgisini de içeriyor |
 | Günlük fiyat | İş Yatırım | İşlemden kalkan hisseler dahil; piyasa değeri ve halka açık PD aynı yanıtta |
 | Şirket listesi | KAP | Yalnızca güncel şirketler |
+| KAP bildirimleri | kap.org.tr bildirim sorgu API'si | Üst veri (saat, konu, özet); sorgu başına 2.000 kayıt sınırı → günlük sorgu |
 
 Kod değişiklikleri (ör. KOZAL → TRALT) `config/ticker_aliases.csv` dosyasında elle tutulur.
 
