@@ -80,10 +80,16 @@ def main() -> None:
     parser.add_argument("--window", type=int, default=6, choices=(3, 6, 12))
     parser.add_argument("--models", default="")
     parser.add_argument("--hindsight", action="store_true")
+    parser.add_argument("--drop-kap", action="store_true",
+                        help="Ablation (tez sorusu 3): KAP / habersiz hareket özellikleri olmadan")
     args = parser.parse_args()
     t0 = time.time()
 
     df, cases = load(args.window)
+    if args.drop_kap:
+        kap_cols = [c for c in df.columns if c.startswith(("n_", "no_news", "days_since_")) or c == "ret_20_z_per_news"]
+        df = df.drop(columns=kap_cols)
+        print(f"ablation: {len(kap_cols)} KAP sütunu çıkarıldı")
     y = training_target(df, cases, args.window, args.hindsight)
     train = (df["split"] == "train") & (df[f"ignore_{args.window}m"].fillna(0) == 0)
     Xtr, ytr = df.loc[train], y[train]
@@ -109,10 +115,11 @@ def main() -> None:
     res = pd.DataFrame(rows)
     out = INTERIM / "results"
     out.mkdir(parents=True, exist_ok=True)
-    tag = f"w{args.window}" + ("_hindsight" if args.hindsight else "")
+    tag = f"w{args.window}" + ("_hindsight" if args.hindsight else "") + ("_nokap" if args.drop_kap else "")
     res.to_parquet(out / f"results_{tag}.parquet", index=False)
 
-    lines = [f"# Sonuçlar — pencere {args.window} ay, {'hindsight' if args.hindsight else 'dürüst mod'}", ""]
+    mode = ("hindsight" if args.hindsight else "dürüst mod") + (", KAP özellikleri yok" if args.drop_kap else "")
+    lines = [f"# Sonuçlar — pencere {args.window} ay, {mode}", ""]
     for split in EVAL_SPLITS:
         r = res[res["split"] == split]
         if r.empty:
