@@ -54,8 +54,12 @@ def _to_date(s: str) -> pd.Timestamp:
     return pd.to_datetime(s.replace("/", "."), format="%d.%m.%Y", errors="coerce")
 
 
+_SINGLE_DAY = re.compile(_DATE + r"\s+tarihinde\s+(?:gerçekleştirilen|meydana gelen)")
+
+
 def extract_periods(text: str) -> tuple[pd.Timestamp | None, pd.Timestamp | None]:
-    """Metindeki tüm tarih aralıklarının en erken başlangıç / en geç bitişini döndürür."""
+    """Metindeki tüm tarih aralıklarının en erken başlangıç / en geç bitişini döndürür.
+    Aralık yoksa tek günlük olayları ("22.02.2017 tarihinde gerçekleştirilen işlemler") alır."""
     starts, ends = [], []
     for a, b in _PERIOD.findall(text):
         s, e = _to_date(a), _to_date(b)
@@ -63,7 +67,10 @@ def extract_periods(text: str) -> tuple[pd.Timestamp | None, pd.Timestamp | None
             starts.append(s)
             ends.append(e)
     if not starts:
-        return None, None
+        days = [d for d in map(_to_date, _SINGLE_DAY.findall(text)) if pd.notna(d)]
+        if not days:
+            return None, None
+        return min(days), max(days)
     return min(starts), max(ends)
 
 
@@ -151,24 +158,29 @@ def period_for_ticker(text: str, ticker: str) -> tuple[pd.Timestamp | None, pd.T
     return (s, e) if pd.notna(s) and pd.notna(e) and s <= e else (None, None)
 
 
-_INSIDER = re.compile(r"özel durum açıklaması öncesinde|bilgi suistimali niteliğinde|içsel bilgi", re.IGNORECASE)
+_INSIDER = re.compile(r"özel durum açıklaması(?:nın)? öncesinde|bilgi suistimali niteliğinde|içsel bilgi", re.IGNORECASE)
 _PRICE_MOVE = re.compile(r"fiyat ve miktar hareketleri", re.IGNORECASE)
+_WARRANT = re.compile(r"varant|dayanak varlıklı", re.IGNORECASE)
 
 
 def classify(item: dict) -> str | None:
-    """'manipulation' | 'insider' | 'market_measure' | None
+    """'manipulation' | 'insider' | 'warrant' | 'market_measure' | None
 
     - manipulation: SPKn 104 (piyasa bozucu eylem) / 107 (piyasa dolandırıcılığı) ya da
       pay piyasası işlemleri nedeniyle getirilen işlem yasağı
-    - insider: SPKn 106 / özel durum açıklaması öncesi işlemler (kapsam dışı, ayrı tutulur)
+    - insider: SPKn 106 / özel durum açıklaması öncesi işlemler (kapsam dışı, ayrı tutulur).
+      Md. 104 ile cezalandırılsa da açıklama öncesi işlemler pompala-boşalt değildir.
+    - warrant: hissenin kendisi değil ona dayalı varant piyasasındaki işlemler (kapsam dışı)
     - market_measure: SPK'nın "gözlenen fiyat ve miktar hareketleri" nedeniyle hisse
       bazında aldığı tedbirler (brüt takas, internetten emir yasağı vb.) — zayıf etiket
     """
     arts = item["articles"]
     header = item["header"]
     low = header.lower()
+    if _WARRANT.search(header):
+        return "warrant"
     if any(a.startswith("106") for a in arts) or _INSIDER.search(header):
-        if not any(a.startswith(("104", "107/1")) for a in arts):
+        if not any(a.startswith("107/1") for a in arts):
             return "insider"
     if any(a.startswith(("104", "107")) for a in arts):
         return "manipulation"

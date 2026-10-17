@@ -59,7 +59,8 @@ def decisions_from_api(events: pd.DataFrame, universe: pd.DataFrame) -> pd.DataF
     df["ref"] = df["decision_no"]
     df["articles"] = None
     df = df.rename(columns={"total_fine_try": "total_amount_try"})
-    df["multi_stock"] = False
+    # "Muhtelif pay piyasalarında ..." → belirli bir hisseye ait değil
+    df["multi_stock"] = df["sample_text"].fillna("").str.contains("muhtelif", case=False)
     return df[_COLS]
 
 
@@ -85,15 +86,32 @@ def merge_decisions(bulletin: pd.DataFrame, api: pd.DataFrame, tol_days: int = 2
     return merged.sort_values(["ticker", "decision_date"]).reset_index(drop=True)
 
 
+def _periods_disjoint(case_start, case_end, start, end, slack_days: int = 90) -> bool:
+    """İki dönem de biliniyor ve aralarında `slack_days`'ten fazla boşluk varsa True."""
+    if any(pd.isna(x) for x in (case_start, case_end, start, end)):
+        return False
+    slack = pd.Timedelta(days=slack_days)
+    return start > case_end + slack or end < case_start - slack
+
+
 def build_cases(decisions: pd.DataFrame, case_gap_days: int = 540) -> pd.DataFrame:
-    """Hisse bazında, ardışık kararlar arası boşluk `case_gap_days`'i aşınca yeni vaka başlar."""
+    """Hisse bazında kararları vakalara ayırır. Yeni vaka başlar eğer:
+    - önceki karardan bu yana `case_gap_days`'ten fazla geçmişse, ya da
+    - iki kararın da manipülasyon dönemi biliniyor ve dönemler örtüşmüyorsa
+      (ör. GEREL: Haziran 2020 işlemleri ile Aralık 2021 açıklaması ayrı olaylar)."""
     rows = []
     for ticker, g in decisions.sort_values("decision_date").groupby("ticker"):
         case_no, last = 0, None
+        c_start = c_end = None
         for _, r in g.iterrows():
-            if last is not None and (r.decision_date - last).days > case_gap_days:
+            if last is not None and ((r.decision_date - last).days > case_gap_days
+                                     or _periods_disjoint(c_start, c_end, r.period_start, r.period_end)):
                 case_no += 1
+                c_start = c_end = None
             last = r.decision_date
+            if pd.notna(r.period_start):
+                c_start = r.period_start if c_start is None else min(c_start, r.period_start)
+                c_end = r.period_end if c_end is None else max(c_end, r.period_end)
             rows.append({**r.to_dict(), "case_id": f"{ticker}-{case_no}"})
     d = pd.DataFrame(rows)
     cases = (d.groupby(["case_id", "ticker"], as_index=False)
