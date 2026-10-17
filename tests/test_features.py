@@ -44,3 +44,26 @@ def test_value_ratio_excludes_today():
     p.loc[99, "value_try"] = p["value_try"].iloc[:99].median() * 50
     f = ticker_features(p)
     assert f.loc[99, "value_ratio_60"] > 30
+
+
+def test_kap_features_respect_effective_date():
+    from bistmd.features.kap import ticker_kap_features
+
+    dates = pd.Series(pd.bdate_range("2020-01-01", periods=30))
+    ev = pd.DataFrame({"effective_date": [dates[10], dates[10], dates[25]],
+                       "category": ["material", "unusual_move", "material"]})
+    f = ticker_kap_features(dates, ev).set_index("date")
+    assert f.loc[dates[9], "n_material_5"] == 0          # olaydan önceki gün görünmez
+    assert f.loc[dates[10], "n_material_5"] == 1
+    assert f.loc[dates[14], "n_material_5"] == 1
+    assert f.loc[dates[15], "n_material_5"] == 0          # 5 işlem günü sonra pencereden çıkar
+    assert f.loc[dates[10], "n_unusual_move_20"] == 1
+    assert f.loc[dates[13], "days_since_material"] == 3
+    assert f.loc[dates[5], "days_since_material"] == 250  # henüz hiç haber yok
+
+
+def test_categorize():
+    from bistmd.features.kap import categorize
+
+    s = pd.Series(["Yeni İş İlişkisi", "Şirket Genel Bilgi Formu", "Olağan Dışı Fiyat ve Miktar Hareketleri"])
+    assert categorize(s).tolist() == ["material", "routine", "unusual_move"]
