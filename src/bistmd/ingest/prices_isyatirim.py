@@ -52,7 +52,11 @@ def fetch(ticker: str, start: str = "01-01-2010", end: str | None = None,
         raise RuntimeError(f"{ticker}: {payload.get('errorDescription')}")
     df = pd.DataFrame(payload["value"])
     if df.empty:
-        return pd.DataFrame(columns=list(COLUMNS.values()))
+        # Tipli boş tablo: birleştirmede tarih sütununun tipini bozmasın
+        empty = {c: pd.Series(dtype="float64") for c in COLUMNS.values()}
+        empty.update(ticker=pd.Series(dtype="str"), date=pd.Series(dtype="datetime64[ns]"),
+                     free_float=pd.Series(dtype="float64"))
+        return pd.DataFrame(empty)
     df = df[[c for c in COLUMNS if c in df.columns]].rename(columns=COLUMNS)
     df["date"] = pd.to_datetime(df["date"], format="%d-%m-%Y")
     df["free_float"] = df["float_mcap_try"] / df["mcap_try"]
