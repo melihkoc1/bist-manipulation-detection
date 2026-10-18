@@ -23,6 +23,8 @@ from bistmd.models.core import ALL_MODELS
 from bistmd.paths import DB_PATH, INTERIM, ROOT
 
 KS = (10, 20, 50)
+# Hissenin kimliğini taşıyan, zaman içinde yavaş değişen özellikler (bkz. özellik önem analizi)
+PROFILE = ["free_float", "log_mcap_usd", "amihud_60"]
 EVAL_SPLITS = ("val", "test", "forward")
 
 
@@ -82,10 +84,18 @@ def main() -> None:
     parser.add_argument("--hindsight", action="store_true")
     parser.add_argument("--drop-kap", action="store_true",
                         help="Ablation (tez sorusu 3): KAP / habersiz hareket özellikleri olmadan")
+    parser.add_argument("--profile", choices=("raw", "rank", "drop"), default="raw",
+                        help="Yavaş değişen profil özellikleri: ham / günlük kesitsel sıra / çıkar")
     args = parser.parse_args()
     t0 = time.time()
 
     df, cases = load(args.window)
+    if args.profile == "rank":
+        # Günlük kesitsel yüzdelik: "bugün borsadaki en küçük %10'da mı?" — zaman kaymasına dayanıklı
+        for c in PROFILE:
+            df[c] = df.groupby("date")[c].rank(pct=True)
+    elif args.profile == "drop":
+        df = df.drop(columns=PROFILE)
     if args.drop_kap:
         kap_cols = [c for c in df.columns if c.startswith(("n_", "no_news", "days_since_")) or c == "ret_20_z_per_news"]
         df = df.drop(columns=kap_cols)
@@ -115,10 +125,12 @@ def main() -> None:
     res = pd.DataFrame(rows)
     out = INTERIM / "results"
     out.mkdir(parents=True, exist_ok=True)
-    tag = f"w{args.window}" + ("_hindsight" if args.hindsight else "") + ("_nokap" if args.drop_kap else "")
+    tag = (f"w{args.window}" + ("_hindsight" if args.hindsight else "") + ("_nokap" if args.drop_kap else "")
+           + (f"_profile{args.profile}" if args.profile != "raw" else ""))
     res.to_parquet(out / f"results_{tag}.parquet", index=False)
 
-    mode = ("hindsight" if args.hindsight else "dürüst mod") + (", KAP özellikleri yok" if args.drop_kap else "")
+    mode = (("hindsight" if args.hindsight else "dürüst mod") + (", KAP özellikleri yok" if args.drop_kap else "")
+            + (f", profil özellikleri: {args.profile}" if args.profile != "raw" else ""))
     lines = [f"# Sonuçlar — pencere {args.window} ay, {mode}", ""]
     for split in EVAL_SPLITS:
         r = res[res["split"] == split]
