@@ -40,10 +40,13 @@ def load(window: int):
     return df, cases
 
 
-def training_target(df: pd.DataFrame, cases: pd.DataFrame, window: int, hindsight: bool) -> pd.Series:
+def training_target(df: pd.DataFrame, cases: pd.DataFrame, window: int, hindsight: bool,
+                    cutoff: pd.Timestamp | None = None) -> pd.Series:
+    """Eğitim etiketi. Dürüst modda yalnızca `cutoff` tarihine kadar SPK'nın açıkladığı
+    vakalar pozitiftir; sonradan açıklananlar o anda bilinmediği için etiketsiz kalır."""
     y = df[f"pos_{window}m"].fillna(0).astype(int)
     if not hindsight:
-        cutoff = pd.Timestamp(metrics.SPLITS["train"][1])
+        cutoff = cutoff if cutoff is not None else pd.Timestamp(metrics.SPLITS["train"][1])
         known = set(cases.loc[cases["first_decision"] <= cutoff, "case_id"])
         y = y.where(df[f"case_{window}m"].isin(known), 0)
     return y
@@ -86,6 +89,8 @@ def main() -> None:
                         help="Ablation (tez sorusu 3): KAP / habersiz hareket özellikleri olmadan")
     parser.add_argument("--profile", choices=("raw", "rank", "drop"), default="raw",
                         help="Yavaş değişen profil özellikleri: ham / günlük kesitsel sıra / çıkar")
+    parser.add_argument("--walk-forward", action="store_true",
+                        help="Her değerlendirme yılı için o yılın başına kadarki veriyle yeniden eğit")
     args = parser.parse_args()
     t0 = time.time()
 
@@ -100,37 +105,46 @@ def main() -> None:
         kap_cols = [c for c in df.columns if c.startswith(("n_", "no_news", "days_since_")) or c == "ret_20_z_per_news"]
         df = df.drop(columns=kap_cols)
         print(f"ablation: {len(kap_cols)} KAP sütunu çıkarıldı")
-    y = training_target(df, cases, args.window, args.hindsight)
-    train = (df["split"] == "train") & (df[f"ignore_{args.window}m"].fillna(0) == 0)
-    Xtr, ytr = df.loc[train], y[train]
     scored = df["split"].isin(EVAL_SPLITS)
+    not_ignored = df[f"ignore_{args.window}m"].fillna(0) == 0
+    if args.walk_forward:
+        # (eğitim bitişi, skorlanan yıl) çiftleri: 2022 için ≤2021, ..., 2026 için ≤2025
+        years = sorted(df.loc[scored, "date"].dt.year.unique())
+        rounds = [(pd.Timestamp(f"{yr - 1}-12-31"), df["date"].dt.year == yr) for yr in years]
+    else:
+        rounds = [(pd.Timestamp(metrics.SPLITS["train"][1]), scored)]
     prices = df.loc[scored, ["ticker", "date"]].copy()
     # Zirve tespiti için düzeltilmiş fiyat seviyesi: log getirilerin kümülatifi
     prices["close"] = df.loc[scored].groupby("ticker")["ret_1"].cumsum().fillna(0)
-    print(f"eğitim: {len(Xtr):,} satır, pozitif {int(ytr.sum()):,} | değerlendirme: {int(scored.sum()):,} satır")
-
     wanted = [m for m in args.models.split(",") if m]
     rows = []
     for cls in ALL_MODELS:
-        model = cls()
-        if wanted and model.name not in wanted:
+        if wanted and cls.name not in wanted:
             continue
         t = time.time()
-        model.fit(Xtr, ytr)
-        s = df.loc[scored, ["ticker", "date", "split"]].copy()
-        s["score"] = model.score(df.loc[scored])
-        rows += evaluate(model.name, s, df, cases, args.window, prices)
-        print(f"{model.name}: {time.time() - t:.0f}s")
+        parts = []
+        for cutoff, target_rows in rounds:
+            y = training_target(df, cases, args.window, args.hindsight, cutoff)
+            train = (df["date"] <= cutoff) & not_ignored
+            model = cls()
+            model.fit(df.loc[train], y[train])
+            s = df.loc[target_rows, ["ticker", "date", "split"]].copy()
+            s["score"] = model.score(df.loc[target_rows])
+            parts.append(s)
+            print(f"  {cls.name} eğitim ≤{cutoff:%Y}: {int(train.sum()):,} satır, pozitif {int(y[train].sum()):,}")
+        rows += evaluate(cls.name, pd.concat(parts), df, cases, args.window, prices)
+        print(f"{cls.name}: {time.time() - t:.0f}s")
 
     res = pd.DataFrame(rows)
     out = INTERIM / "results"
     out.mkdir(parents=True, exist_ok=True)
     tag = (f"w{args.window}" + ("_hindsight" if args.hindsight else "") + ("_nokap" if args.drop_kap else "")
-           + (f"_profile{args.profile}" if args.profile != "raw" else ""))
+           + (f"_profile{args.profile}" if args.profile != "raw" else "") + ("_wf" if args.walk_forward else ""))
     res.to_parquet(out / f"results_{tag}.parquet", index=False)
 
     mode = (("hindsight" if args.hindsight else "dürüst mod") + (", KAP özellikleri yok" if args.drop_kap else "")
-            + (f", profil özellikleri: {args.profile}" if args.profile != "raw" else ""))
+            + (f", profil özellikleri: {args.profile}" if args.profile != "raw" else "")
+            + (", yıllık yeniden eğitim" if args.walk_forward else ""))
     lines = [f"# Sonuçlar — pencere {args.window} ay, {mode}", ""]
     for split in EVAL_SPLITS:
         r = res[res["split"] == split]
