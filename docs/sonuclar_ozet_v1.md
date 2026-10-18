@@ -67,3 +67,33 @@ tezde üç pencere birlikte raporlanmalı.
 3. **Kural + ML birleşimi:** Kural tabanlı skorun yüksek recall'u ile ML'in precision'ı.
 4. Doğrulama dönemiyle sınırlı hiperparametre ayarı; ticker bazlı (GroupKFold) erken durdurma.
 5. Kaçırılan vakaların ve en yüksek skorlu etiketsiz hisselerin vaka analizi.
+
+---
+
+## 5. Ek (18.10.2026): Yıllık yeniden eğitim
+
+Her değerlendirme yılı için model, o yılın başına kadarki veriyle ve o tarihe kadar SPK'nın
+açıkladığı vakalarla yeniden eğitildi (eğitim pozitifleri: ≤2021 13.855 → ≤2025 29.576 hisse-gün).
+Profil özellikleri çıkarılmış yapılandırma; 6 aylık pencere.
+
+| Model | Test recall@20 (statik → yıllık) | İleriye dönük recall@20 (statik → yıllık) | İleriye dönük prec@10 (yıllık) |
+|---|---|---|---|
+| 0a Kural tabanlı | 0,44 → 0,44 | 0,47 → 0,47 | 0,051 |
+| 2 LightGBM | 0,36 → **0,46** [0,35–0,57] | 0,42 → 0,40 | 0,078 |
+| 3a PU ağırlıklı | 0,42 → 0,40 | 0,43 → 0,42 | 0,076 |
+| 3b PU bagging | 0,38 → 0,39 | 0,43 → 0,40 | 0,070 |
+| 2 LightGBM — ham profil | — | 0,27 (yıllık) | 0,038 |
+
+**B7 — Yeniden eğitim tabloyu değiştirmiyor.** Yıllık yeniden eğitim LightGBM'i testte kural
+tabanlı modelin seviyesine çıkarıyor (0,46 vs 0,44) ama genel resim aynı: ML modelleri recall'da
+kurallarla **eşit**, precision'da ~1,5 kat **daha iyi** (0,07–0,08 vs 0,05). "İlk test ML'e haksızlık
+ediyordu" hipotezi büyük ölçüde desteklenmedi.
+
+**B8 — Profil ezberi yeniden eğitimle düzelmiyor.** Ham profil özellikleriyle yıllık eğitilen
+LightGBM yine çöküyor (ileriye dönük 0,27). B3 bulgusu sağlam.
+
+**B9 — KAP özellikleri mevcut haliyle hafif zarar veriyor (Soru 3).** Yıllık eğitimde KAP
+özellikleri çıkarıldığında recall ve precision tutarlı biçimde biraz **artıyor** (ör. LightGBM
+ileriye dönük prec@10: 0,078 → 0,103; PU bagging recall@20: 0,40 → 0,45). Farklar güven
+aralıkları içinde, ama yön tutarlı: kaba bildirim sayıları gürültü ekliyor. Soru 3'ün anlamlı
+test edilmesi için bildirimlerin içerik bazında sınıflandırılması gerekiyor.
