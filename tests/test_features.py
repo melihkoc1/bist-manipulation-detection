@@ -51,19 +51,23 @@ def test_kap_features_respect_effective_date():
 
     dates = pd.Series(pd.bdate_range("2020-01-01", periods=30))
     ev = pd.DataFrame({"effective_date": [dates[10], dates[10], dates[25]],
-                       "category": ["material", "unusual_move", "material"]})
+                       "category": ["strong_news", "unusual_move", "strong_news"]})
     f = ticker_kap_features(dates, ev).set_index("date")
-    assert f.loc[dates[9], "n_material_5"] == 0          # olaydan önceki gün görünmez
-    assert f.loc[dates[10], "n_material_5"] == 1
-    assert f.loc[dates[14], "n_material_5"] == 1
-    assert f.loc[dates[15], "n_material_5"] == 0          # 5 işlem günü sonra pencereden çıkar
+    assert f.loc[dates[9], "n_strong_news_5"] == 0          # olaydan önceki gün görünmez
+    assert f.loc[dates[10], "n_strong_news_5"] == 1
+    assert f.loc[dates[14], "n_strong_news_5"] == 1
+    assert f.loc[dates[15], "n_strong_news_5"] == 0          # 5 işlem günü sonra pencereden çıkar
     assert f.loc[dates[10], "n_unusual_move_20"] == 1
-    assert f.loc[dates[13], "days_since_material"] == 3
-    assert f.loc[dates[5], "days_since_material"] == 250  # henüz hiç haber yok
+    assert f.loc[dates[13], "days_since_strong_news"] == 3
+    assert f.loc[dates[5], "days_since_strong_news"] == 250  # henüz hiç haber yok
 
 
-def test_categorize():
+def test_categorize_separates_price_reactive_from_news():
     from bistmd.features.kap import categorize
 
-    s = pd.Series(["Yeni İş İlişkisi", "Şirket Genel Bilgi Formu", "Olağan Dışı Fiyat ve Miktar Hareketleri"])
-    assert categorize(s).tolist() == ["material", "routine", "unusual_move"]
+    subj = pd.Series(["Özel Durum Açıklaması (Genel)"] * 4 + ["Şirket Genel Bilgi Formu", "Yeni İş İlişkisi"])
+    summ = pd.Series(["BİAŞ'da oluşan ağırlıklı ortalama fiyatın, pay başına net aktif değerin 2 katını aşması",
+                      "Yönetim Kurulu Görev Dağılımı", "Savunma sanayi sözleşme imzalandı", "Genel Müdür Ataması",
+                      None, None])
+    assert categorize(subj, summ).tolist() == [
+        "price_reactive", "governance_routine", "strong_news", "weak_news", "routine", "strong_news"]

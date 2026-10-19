@@ -27,7 +27,7 @@ def main() -> None:
 
     con = duckdb.connect(str(DB_PATH), read_only=True)
     prices = con.execute("SELECT * FROM prices WHERE date >= ?", [start - pd.DateOffset(months=6)]).df()
-    kap = con.execute("SELECT ticker, effective_date, subject FROM kap_disclosures").df()
+    kap = con.execute("SELECT ticker, effective_date, subject, summary FROM kap_disclosures").df()
     cases = con.execute("SELECT * FROM spk_cases").df()
     con.close()
     print(f"yüklendi: {prices.ticker.nunique()} hisse, {len(prices):,} satır, {len(kap):,} KAP satırı "
