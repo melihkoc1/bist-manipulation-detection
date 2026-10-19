@@ -25,6 +25,7 @@ from bistmd.paths import DB_PATH, INTERIM, ROOT
 KS = (10, 20, 50)
 # Hissenin kimliğini taşıyan, zaman içinde yavaş değişen özellikler (bkz. özellik önem analizi)
 PROFILE = ["free_float", "log_mcap_usd", "amihud_60"]
+NONEWS = {"no_news_20", "no_news_ret_20_z", "no_news_value_ratio_5d_60", "ret_20_z_per_news"}
 EVAL_SPLITS = ("val", "test", "forward")
 
 
@@ -85,8 +86,10 @@ def main() -> None:
     parser.add_argument("--window", type=int, default=6, choices=(3, 6, 12))
     parser.add_argument("--models", default="")
     parser.add_argument("--hindsight", action="store_true")
-    parser.add_argument("--drop-kap", action="store_true",
-                        help="Ablation (tez sorusu 3): KAP / habersiz hareket özellikleri olmadan")
+    parser.add_argument("--kap-set", choices=("all", "none", "nonews", "unusual"), default="all",
+                        help="KAP özellik kümesi (tez sorusu 3 ablation): all=hepsi, none=hiçbiri, "
+                             "nonews=yalnızca 'habersiz hareket' özellikleri, unusual=yalnızca olağan dışı hareket sayaçları")
+    parser.add_argument("--drop-kap", action="store_true", help="--kap-set none ile aynı (eski ad)")
     parser.add_argument("--profile", choices=("raw", "rank", "drop"), default="raw",
                         help="Yavaş değişen profil özellikleri: ham / günlük kesitsel sıra / çıkar")
     parser.add_argument("--walk-forward", action="store_true",
@@ -102,9 +105,13 @@ def main() -> None:
     elif args.profile == "drop":
         df = df.drop(columns=PROFILE)
     if args.drop_kap:
+        args.kap_set = "none"
+    if args.kap_set != "all":
         kap_cols = [c for c in df.columns if c.startswith(("n_", "no_news", "days_since_")) or c == "ret_20_z_per_news"]
-        df = df.drop(columns=kap_cols)
-        print(f"ablation: {len(kap_cols)} KAP sütunu çıkarıldı")
+        keep = {"none": set(), "nonews": NONEWS, "unusual": {"n_unusual_move_20", "n_unusual_move_60"}}[args.kap_set]
+        drop = [c for c in kap_cols if c not in keep]
+        df = df.drop(columns=drop)
+        print(f"KAP kümesi '{args.kap_set}': {len(drop)} sütun çıkarıldı, {len(kap_cols) - len(drop)} kaldı")
     scored = df["split"].isin(EVAL_SPLITS)
     not_ignored = df[f"ignore_{args.window}m"].fillna(0) == 0
     if args.walk_forward:
@@ -138,11 +145,11 @@ def main() -> None:
     res = pd.DataFrame(rows)
     out = INTERIM / "results"
     out.mkdir(parents=True, exist_ok=True)
-    tag = (f"w{args.window}" + ("_hindsight" if args.hindsight else "") + ("_nokap" if args.drop_kap else "")
+    tag = (f"w{args.window}" + ("_hindsight" if args.hindsight else "") + {"all": "", "none": "_nokap", "nonews": "_kapnonews", "unusual": "_kapunusual"}[args.kap_set]
            + (f"_profile{args.profile}" if args.profile != "raw" else "") + ("_wf" if args.walk_forward else ""))
     res.to_parquet(out / f"results_{tag}.parquet", index=False)
 
-    mode = (("hindsight" if args.hindsight else "dürüst mod") + (", KAP özellikleri yok" if args.drop_kap else "")
+    mode = (("hindsight" if args.hindsight else "dürüst mod") + (f", KAP kümesi: {args.kap_set}" if args.kap_set != "all" else "")
             + (f", profil özellikleri: {args.profile}" if args.profile != "raw" else "")
             + (", yıllık yeniden eğitim" if args.walk_forward else ""))
     lines = [f"# Sonuçlar — pencere {args.window} ay, {mode}", ""]

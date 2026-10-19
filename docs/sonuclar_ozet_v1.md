@@ -97,3 +97,45 @@ LightGBM yine çöküyor (ileriye dönük 0,27). B3 bulgusu sağlam.
 ileriye dönük prec@10: 0,078 → 0,103; PU bagging recall@20: 0,40 → 0,45). Farklar güven
 aralıkları içinde, ama yön tutarlı: kaba bildirim sayıları gürültü ekliyor. Soru 3'ün anlamlı
 test edilmesi için bildirimlerin içerik bazında sınıflandırılması gerekiyor.
+
+---
+
+## 6. Ek (19.10.2026): KAP içerik sınıflandırması ve tez sorusu 3 ("habersiz hareket")
+
+İlk KAP özellikleri hatalıydı: fiyat artışının sonucu olan zorunlu bildirimler ("fiyat, net aktif
+değerin X katını aştı", ~%10 hacim) haber sayılıyordu (bkz. `docs/validation_kap.md`, güvenilirlik
+%93, n=60). Özellikler içeriğe göre yeniden üretildi ve dört KAP kümesi, yıllık yeniden eğitimle
+(6 aylık pencere, profil özellikleri çıkarılmış) karşılaştırıldı. Değerler val+test+ileriye dönük
+dönemlerin ortalaması, 4 ML modeli.
+
+| KAP özellik kümesi | recall@20 (ort.) | precision@10 (ort.) |
+|---|---:|---:|
+| KAP yok (yalnızca fiyat/hacim/likidite) | 0,392 | 0,093 |
+| Yalnızca "habersiz hareket" (4 özellik) | **0,409** | 0,092 |
+| Yalnızca "olağan dışı hareket" sayaçları | 0,374 | 0,088 |
+| Tüm KAP özellikleri (19) | 0,375 | 0,084 |
+
+Eşleştirilmiş fark (KAP kümesi − KAP yok; 36 model×dönem×k hücresi): habersiz hareket recall
++0,007 (17 hücre artan, 12 azalan), precision −0,0004; tüm KAP recall −0,019, precision −0,005.
+
+**B10 — Tez sorusu 3 cevabı: "habersiz hareket" özellikleri ölçülebilir ek katkı sağlamıyor.**
+Fark sıfırdan ayırt edilemiyor (güven aralıkları ±0,12; bu örneklem büyüklüğüyle ancak ≥10 puanlık
+farklar tespit edilebilir). Tüm KAP özelliklerinin eklenmesi hafifçe zarar veriyor.
+
+**Tanımlayıcı bulgular (model dışı):**
+- Fiyatı güçlü yükselen günlerde (ret_20_z > 2), habersiz olanların manipülasyon oranı %2,02,
+  haberli olanların %1,76 → 1,15 kat (yön beklenen yönde, etki küçük).
+- Hareketli günlerde (ret_20_z > 1,5 veya hacim oranı > 3), Borsa'nın istediği "olağan dışı fiyat
+  ve miktar hareketi" açıklaması olanların manipülasyon oranı %1,92, olmayanların %0,74 (2,6 kat).
+  Ama bu bilgi modele ek başarı getirmedi; açıklama zaten fiyat/hacim hareketinin sonucu olduğu için
+  fiyat-hacim özellikleriyle büyük ölçüde örtüşüyor olabilir (test edilmedi).
+- Hareketli günlerde güçlü haber olan/olmayan oranları neredeyse eşit (%0,84 vs %0,95): pompalanan
+  hisselerde de haber akışı sürüyor. BIST'te manipülasyonlara sıklıkla bahane haber eşlik ediyor
+  olabilir (kanıtlanmadı; yalnızca olası açıklama).
+- Tüm KAP kümesinde LightGBM kazancının %33'ü KAP özelliklerinden geliyordu (en çok "son güçlü
+  haberden beri gün" ve "finansal rapor sayısı"). Bunlar şirketin bildirim aktivitesini, yani
+  büyüklük/kimlik göstergesini temsil ediyor olabilir; B3'teki profil ezberinin KAP versiyonu.
+
+**Teknik not:** `n_capital_action_60` sayacı %44 oranında dolu; içeriğinin büyük kısmı temettü
+bildirimleri. Bedelsiz sermaye artırımını ayrı ölçmek için daha ince bir kural gerekiyor (yapılmadı).
+Bu sayaç ilk sürümde hatayla tamamen sıfırdı; düzeltildi (`tests/test_features.py`).

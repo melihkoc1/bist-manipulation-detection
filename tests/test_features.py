@@ -71,3 +71,16 @@ def test_categorize_separates_price_reactive_from_news():
                       None, None])
     assert categorize(subj, summ).tolist() == [
         "price_reactive", "governance_routine", "strong_news", "weak_news", "routine", "strong_news"]
+
+
+def test_capital_action_counter_is_populated():
+    from bistmd.features.kap import build
+
+    dates = pd.bdate_range("2020-01-01", periods=40)
+    pf = pd.DataFrame({"ticker": "AAA", "date": dates, "ret_20_z": 1.0, "value_ratio_5d_60": 1.0})
+    kap = pd.DataFrame({"ticker": ["AAA"], "effective_date": [dates[10]],
+                        "subject": ["Sermaye Artırımı - Azaltımı İşlemlerine İlişkin Bildirim"], "summary": [None]})
+    out = build(pf, kap).set_index("date")
+    assert out.loc[dates[10], "n_capital_action_60"] == 1   # ayrı sayaç doluyor
+    assert out.loc[dates[10], "n_strong_news_20"] == 1      # aynı zamanda güçlü haber sayılıyor
+    assert out.loc[dates[9], "n_capital_action_60"] == 0

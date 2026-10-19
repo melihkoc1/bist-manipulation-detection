@@ -62,8 +62,12 @@ def build(price_features: pd.DataFrame, kap: pd.DataFrame) -> pd.DataFrame:
     `kap`: ticker, effective_date, subject, summary sütunları (bkz. bistmd.db.kap_disclosures).
     """
     k = kap[["ticker", "effective_date", "subject", "summary"]].dropna(subset=["effective_date"]).copy()
-    k["category"] = categorize(k["subject"], k["summary"])
-    k = k.drop(columns=["subject", "summary"])
+    content = kap_content.classify(k["subject"], k["summary"])
+    k["category"] = content.map(kap_content.group_of)
+    # Bedelsiz / sermaye artırımı hem "güçlü haber" hem de ayrı bir sayaç olarak sayılır
+    # (klasik "bahane haber"); çoğaltılan satır yalnızca capital_action penceresini besler.
+    extra = k[content == "capital_action"].assign(category="capital_action")
+    k = pd.concat([k, extra], ignore_index=True).drop(columns=["subject", "summary"])
     by_ticker = dict(tuple(k.groupby("ticker")))
     empty = k.iloc[0:0]
     parts = []
