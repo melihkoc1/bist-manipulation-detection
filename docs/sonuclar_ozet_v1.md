@@ -1,3 +1,5 @@
+> **GÜNCEL DEĞİL:** Bu belgedeki olay bazlı recall rakamları rastgele tabana karşı ölçülmemişti (§7). Güncel ve doğru ölçülmüş sonuçlar: [sonuclar_v2.md](sonuclar_v2.md).
+
 # İlk Model Sonuçları (v1) — Özet ve Yorum
 
 **Tarih:** 18.10.2026 · **Veri:** 648 hisse, 2012–2026, 1,59 milyon hisse-gün, KAP 2010–2026 tam
