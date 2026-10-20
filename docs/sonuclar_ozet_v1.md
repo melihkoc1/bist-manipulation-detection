@@ -23,9 +23,10 @@ Köşeli parantez: %95 bootstrap güven aralığı.
 
 ## 2. Bulgular
 
-**B1 — Erken tespit mümkün (Soru 1).** Haftalık 20 hisselik listeyle vakaların ~%40–47'si,
-manipülasyon penceresi içinde yakalanıyor. Alarmların %80–95'i fiyat zirvesinden **önce**.
-Dönemi bilinen vakalarda ilk alarm, dönem başlangıcından medyan 10–20 gün sonra.
+**B1 — [DÜZELTİLDİ, bkz. §7] Erken tespit sorusunun cevabı bu metrikle verilemiyor.** İlk sürümde
+"vakaların ~%40–47'si yakalanıyor, alarmların %80–95'i zirveden önce" yazılmıştı. Rastgele skor
+tabanı ölçülünce bu rakamların rastgele seçimden daha iyi olmadığı görüldü (§7). Kanıt yalnızca
+precision liftinde (~2–2,5×) ve dönemi bilinen az sayıda vakada var.
 
 **B2 — Basit kurallar güçlü bir rakip.** Hiçbir ML modeli recall'da kural tabanlı modeli
 istatistiksel olarak anlamlı biçimde geçemedi (güven aralıkları örtüşüyor). ML modellerinin
@@ -139,3 +140,32 @@ farklar tespit edilebilir). Tüm KAP özelliklerinin eklenmesi hafifçe zarar ve
 **Teknik not:** `n_capital_action_60` sayacı %44 oranında dolu; içeriğinin büyük kısmı temettü
 bildirimleri. Bedelsiz sermaye artırımını ayrı ölçmek için daha ince bir kural gerekiyor (yapılmadı).
 Bu sayaç ilk sürümde hatayla tamamen sıfırdı; düzeltildi (`tests/test_features.py`).
+
+
+---
+
+## 7. DÜZELTME (20.10.2026): Olay bazlı recall rastgele seçimle karşılaştırılmadan raporlanmıştı
+
+`scripts/baseline_random.py` ile aynı değerlendirme hattından **rastgele skor** geçirildi
+(5 tohum ortalaması; haftada medyan 556 hisse skorlanıyor, k=20 → rastgele liste hisselerin %3,6'sı).
+
+| recall@20 (test+ileriye dönük) | Rastgele | Kural (0a) | LightGBM (yıllık) | Vaka |
+|---|---:|---:|---:|---:|
+| Dönemi kararda yazan vakalar (kısa pencere) | 0,07 | **0,54** | 0,34 | 11 |
+| Dönemi bilinmeyen vakalar (karar öncesi 6 ay) | **0,52** | 0,45 | 0,40 | 121 |
+| Tümü | 0,49 | 0,46 | 0,39 | 132 |
+
+- **6 aylık pencerelerde recall ayırt edici değil.** 26 haftalık pencerede rastgele haftalık 20
+  hisselik liste bile pencere içinde bir kez alarm verme şansına sahip (~%50). Modellerin bu
+  gruptaki recall'u rastgeleden iyi değil. Önceki bölümlerdeki "%40–47 yakalanıyor" ifadeleri
+  başarı kanıtı olarak **okunmamalı**.
+- **"Zirveden önce alarm" oranı da şişik:** rastgele %65–74, modeller %82–90.
+- **Gerçek sinyal kısa pencerede görünüyor:** dönemi bilinen vakalarda kural tabanlı model
+  recall@20 = 0,54 (rastgele 0,07), recall@50 = 0,93 (rastgele 0,23). Ancak n = 11.
+- **Precision liftı geçerli:** test/ileriye dönük dönemlerde haftalık ilk 10 listenin isabeti
+  ~%6–8, rastgele ~%3 (2–2,5×). Etiketsiz ≠ temiz olduğu için gerçek lift daha yüksek olabilir.
+
+**Sonuç:** Soru 1 ("ne kadar erken tespit edilebilir?") için mevcut kanıt zayıf: iki ayrı ve geçerli
+ama küçük kanıt var (precision lifti ~2–2,5×; kısa pencerede 11 vaka). Sıradaki iş: değerlendirmeyi
+rastgele tabanı ve lifti her tabloda gösterecek şekilde yeniden kurmak ve dönemi bilinen 108
+vakayı (yalnızca 11'i test/ileriye dönük dönemde) 2016'dan itibaren yürüyen eğitimle değerlendirmek.
