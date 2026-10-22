@@ -17,11 +17,23 @@ sys.path.insert(0, str(Path(__file__).parent))
 from evaluate_v2 import SCORES, load_cases  # noqa: E402
 
 from bistmd.eval import weekly as W  # noqa: E402
-from bistmd.paths import ROOT  # noqa: E402
+from bistmd.paths import INTERIM, ROOT  # noqa: E402
 
 N_BOOT = 4000
+# Ad "klasör/dosya" biçimindeyse data/interim altındaki o klasörden okunur:
+#   scores_v2_before  — 2016 öncesi bültenler eklenmeden önceki skorlar (eski etiketler, VWAP yok)
+#   scores_v2_novwap  — yeni etiketler, VWAP özellikleri çıkarılmış
 COMPARISONS = [
     # (soru, A, B) — fark = A − B
+    ("Daha çok etiket: LightGBM yeni etiketler vs önce", "scores_v2_novwap/honest_none_2_lightgbm",
+     "scores_v2_before/honest_none_2_lightgbm"),
+    ("Daha çok etiket: PU bagging yeni etiketler vs önce", "scores_v2_novwap/honest_none_3b_pu_bagging",
+     "scores_v2_before/honest_none_3b_pu_bagging"),
+    ("VWAP: kural+VWAP vs kural", "honest_none_0c_kural_vwap", "honest_none_0a_kural"),
+    ("VWAP: LightGBM VWAP'lı vs VWAP'sız", "honest_none_2_lightgbm", "scores_v2_novwap/honest_none_2_lightgbm"),
+    ("VWAP: PU bagging VWAP'lı vs VWAP'sız", "honest_none_3b_pu_bagging", "scores_v2_novwap/honest_none_3b_pu_bagging"),
+    ("Toplam: PU bagging şimdi vs önce", "honest_none_3b_pu_bagging", "scores_v2_before/honest_none_3b_pu_bagging"),
+    ("Toplam: PU bagging vs kural+VWAP", "honest_none_3b_pu_bagging", "honest_none_0c_kural_vwap"),
     ("Soru 2: PU bagging vs gözetimli", "honest_none_3b_pu_bagging", "honest_none_2_lightgbm"),
     ("Soru 2: PU ağırlıklı vs gözetimli", "honest_none_3a_pu_agirlikli", "honest_none_2_lightgbm"),
     ("ML vs kural: PU bagging vs kural", "honest_none_3b_pu_bagging", "honest_none_0a_kural"),
@@ -34,8 +46,12 @@ COMPARISONS = [
 ]
 
 
+def score_path(name: str) -> Path:
+    return (INTERIM if "/" in name else SCORES) / f"{name}.parquet"
+
+
 def per_case(name: str, exact, any12):
-    wk = pd.read_parquet(SCORES / f"{name}.parquet")
+    wk = pd.read_parquet(score_path(name))
     wk["week"] = pd.PeriodIndex(wk["week"], freq="W-FRI")
     lab = W.week_labels(wk, exact, any12)
     neg = np.sort(lab.loc[lab["y"] == 0, "pct"].to_numpy())
@@ -53,7 +69,7 @@ def main() -> None:
     rows = []
     rng = np.random.default_rng(0)
     for q, a, b in COMPARISONS:
-        if not ((SCORES / f"{a}.parquet").exists() and (SCORES / f"{b}.parquet").exists()):
+        if not (score_path(a).exists() and score_path(b).exists()):
             continue
         for n in (a, b):
             cache.setdefault(n, per_case(n, exact, any12))

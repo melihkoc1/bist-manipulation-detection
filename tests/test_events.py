@@ -37,3 +37,11 @@ def test_disjoint_periods_split_cases():
 def test_close_decisions_without_periods_merge():
     d = pd.DataFrame([_dec("2020-01-10"), _dec("2020-09-01")])
     assert len(build_cases(d)) == 1
+
+
+def test_short_period_forms():
+    ts = pd.Timestamp
+    assert extract_periods("Kaplamin hisse senedinde 07-10.01.2008 döneminde") == (ts("2008-01-07"), ts("2008-01-10"))
+    assert extract_periods("hisse senedinde 12.01-21.02.2011 dönemlerinde") == (ts("2011-01-12"), ts("2011-02-21"))
+    # Tam yazım bozulmamalı
+    assert extract_periods("18.10.2005-31.10.2005 döneminde") == (ts("2005-10-18"), ts("2005-10-31"))

@@ -97,3 +97,52 @@ def test_ticker_resolution():
     hdr = "Mepet Metro Petrol ve Tesisleri Sanayi Ticaret A.Ş. paylarında gerçekleştirilen işlemler"
     assert resolve(None, hdr, u) == ("MEPET", "by_name")
     assert resolve("XXXXX", "Bilinmeyen Şirket A.Ş. (XXXXX) pay piyasasında", u) == ("XXXXX", "unlisted")
+
+
+OLD_SAMPLE = """
+SERMAYE PİYASASI KURULU
+2009/2
+HAFTALIK BÜLTEN
+       05/01/2009 – 09/01/2009
+
+14. Yataş Yatağan Sanayi A.Ş. yönetim kurulu üyeleri hakkında SPKn'nun 47/A-6 maddesi kapsamında
+Cumhuriyet Savcılığı'na suç duyurusunda bulunulmasına karar verilmiştir.
+15. Boyasan Tekstil Sanayi ve Ticaret A.Ş. (Boyasan) hisse senedinin piyasasında 18.10.2005-31.10.2005 döneminde
+gerçekleştirilen işlemlerin incelenmesi sonucunda;
+A) 18.10.2005-31.10.2005 döneminde Boyasan hisse senedinde gerçekleştirilen SPKn’nun 47/I-A-2 maddesinde
+tanımlanan suçun unsurlarını içeren fiilleri nedeniyle, M***** Ç**** hakkında Cumhuriyet Savcılığına suç
+duyurusunda bulunulmasına, B) hakkında işlem yapma yasağı getirilmesine, karar verilmiştir.
+16. MTEKS hisse senedinde 15.01.2009-26.02.2009 döneminde Sermaye Piyasası Kanunu (SPKn)’nun 47/I-A-1
+maddesinde tanımlanan suçun unsurlarını içeren fiilleri nedeniyle Matlı Tekstil A.Ş. hisse senedi ile ilgili
+suç duyurusunda bulunulmasına karar verilmiştir.
+17. Kaplamin Ambalaj Sanayi ve Ticaret A.Ş. hisse senedinde 07-10.01.2008 tarihleri arasında
+gerçekleştirilen SPKn. 47/1-(A)-2 maddesinde tanımlanan fiiller nedeniyle suç duyurusunda bulunulmasına karar verilmiştir.
+"""
+
+
+def test_old_format_items():
+    from bistmd.labels.spk_bulletins import parse_old_bulletin_text
+    meta, items = parse_old_bulletin_text(OLD_SAMPLE)
+    assert meta["bulletin_year"] == 2009 and meta["bulletin_no"] == 2
+    assert meta["bulletin_date"] == pd.Timestamp("2009-01-09")
+    cats = {it["item"]: it["category"] for it in items}
+    assert "14" not in cats  # hisse piyasası işlemi değil
+    assert cats["15"] == "manipulation" and cats["16"] == "insider" and cats["17"] == "manipulation"
+    boy = next(it for it in items if it["item"] == "15")
+    assert boy["companies"] == ["Boyasan Tekstil Sanayi ve Ticaret A.Ş."]
+    assert boy["period"] == (pd.Timestamp("2005-10-18"), pd.Timestamp("2005-10-31"))
+    assert boy["section"] == "suc_duyurusu"
+    kap = next(it for it in items if it["item"] == "17")
+    assert kap["period"] == (pd.Timestamp("2008-01-07"), pd.Timestamp("2008-01-10"))
+
+
+def test_strict_company_match():
+    from bistmd.labels.tickers import match_company, prepare_universe
+    u = prepare_universe(pd.DataFrame({
+        "ticker": ["ATA", "SNPAM", "SONME", "TBORG"],
+        "title": ["Ata Menkul Kıymetler Yatırım Ortaklığı A.Ş.", "Sönmez Pamuklu Sanayii A.Ş.",
+                  "Sönmez Filament Sentetik İplik ve Elyaf Sanayi A.Ş.", "Türk Tuborg Bira ve Malt Sanayii A.Ş."]}))
+    assert match_company("Metro Menkul Kıymetler Yatırım Ortaklığı A.Ş.", u) is None
+    assert match_company("Sönmez Pamuklu Sanayi A.Ş.", u) == "SNPAM"
+    assert match_company("Sönmez Filament Sentetik İplik ve Elyaf San. A.Ş.", u) == "SONME"
+    assert match_company("Türk Tuborg Bira ve Malt Sanayi A.Ş.", u) == "TBORG"

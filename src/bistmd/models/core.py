@@ -1,6 +1,7 @@
 """Karşılaştırılan modeller. Hepsi aynı arayüzü uygular: fit(X, y) → score(X) (yüksek = şüpheli).
 
 0a  RuleScore      — Borsa gözetim kurallarına benzeyen eşik sayımı (VBTS benzeri)
+0c  RuleScoreVWAP  — 0a + kapanış fiyatı oyunu (VWAP) kuralı
 0b  SimpleScore    — getiri z-skoru × hacim oranı (akıl sağlığı kontrolü)
 1   IForest        — gözetimsiz; etiket kullanılmaz
 2   Supervised     — LightGBM; etiketsiz günler negatif sayılır
@@ -44,6 +45,13 @@ class RuleScore:
     def score(self, X):
         s = sum((X[c] >= t).astype(float) for c, t in self.RULES.items())
         return s + 0.01 * np.tanh(X["ret_20_z"].fillna(0))
+
+
+class RuleScoreVWAP(RuleScore):
+    """0a + kapanış oyunu kuralı: son 10 günün ≥6'sında kapanış VWAP'ın %0,5+ üstünde.
+    Eşik etiketlere bakılmadan, dağılımdan seçildi (günlerin ~%5,6'sı; diğer kurallar kadar seyrek)."""
+    name = "0c_kural_vwap"
+    RULES = {**RuleScore.RULES, "close_above_vwap_10": 6}
 
 
 class SimpleScore:
@@ -159,4 +167,4 @@ class PUBagging:
         return np.mean([m.predict_proba(X[self.cols])[:, 1] for m in self.models], axis=0)
 
 
-ALL_MODELS = [RuleScore, SimpleScore, IForest, Supervised, PUWeighted, PUBagging]
+ALL_MODELS = [RuleScore, RuleScoreVWAP, SimpleScore, IForest, Supervised, PUWeighted, PUBagging]

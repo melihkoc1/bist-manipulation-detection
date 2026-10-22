@@ -75,7 +75,16 @@ def ticker_features(p: pd.DataFrame) -> pd.DataFrame:
     f["limit_up_streak"] = _streak(limit_up)
     f["limit_up_10"] = limit_up.rolling(10, min_periods=1).sum()
     f["up_days_10"] = (r1 > 0).rolling(10, min_periods=5).sum()
-    f["drawdown_from_60_high"] = p["close"] / p["close"].rolling(60, min_periods=20).max() - 1
+    # Kapanış oyunu: kapanışın gün içi ağırlıklı ortalamanın (VWAP) sistematik olarak
+    # üstünde kalması, fiyatın kapanışta yukarı çekildiğine işaret edebilir.
+    # vwap kaynakta düzeltilmiş ölçekte; düzeltilmiş kapanışla karşılaştırılır.
+    vwap = p["vwap"].where(p["vwap"] > 0)
+    cvw = np.log(p["close"] / vwap)
+    f["close_vs_vwap"] = cvw
+    f["close_vs_vwap_5"] = cvw.rolling(5, min_periods=3).mean()
+    f["close_vs_vwap_5_z"] = f["close_vs_vwap_5"] / vol60
+    f["close_above_vwap_10"] = (cvw > 0.005).rolling(10, min_periods=5).sum()
+    f["drawdown_from_60_high"] =p["close"] / p["close"].rolling(60, min_periods=20).max() - 1
     f["dist_from_60_low"] = p["close"] / p["close"].rolling(60, min_periods=20).min() - 1
 
     # Likidite ve profil

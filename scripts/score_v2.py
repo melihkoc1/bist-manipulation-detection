@@ -12,7 +12,9 @@ Profil özellikleri (hisse kimliği) her zaman çıkarılır.
 
 Kullanım:
     python scripts/score_v2.py --mode honest [--models 2_lightgbm,...] [--kap-set none|nonews|all]
-Çıktı: data/interim/scores_v2/{mode}_{kap}_{model}.parquet (hafta × hisse)
+                               [--no-vwap] [--out-dir scores_v2]
+Çıktı: data/interim/{out-dir}/{mode}_{kap}_{model}.parquet (hafta × hisse)
+--no-vwap: kapanış/VWAP özellikleri çıkarılır (katkılarını ayrı ölçmek için)
 """
 
 import argparse
@@ -32,14 +34,16 @@ from bistmd.models.core import ALL_MODELS  # noqa: E402
 from bistmd.paths import INTERIM  # noqa: E402
 
 WINDOW = 6
-YEARS = range(2017, 2027)
+YEARS = range(2012, 2027)  # özellikler 2010-04'ten; ilk dürüst model 2010–2011 verisiyle
 PURGE = pd.Timedelta(days=90)
-OUT = INTERIM / "scores_v2"
-UNTRAINED = {"0a_kural", "0b_basit"}
+UNTRAINED = {"0a_kural", "0c_kural_vwap", "0b_basit"}
+VWAP = ("close_vs_vwap", "close_above_vwap")
 
 
-def prepare(df: pd.DataFrame, kap_set: str) -> pd.DataFrame:
+def prepare(df: pd.DataFrame, kap_set: str, no_vwap: bool = False) -> pd.DataFrame:
     df = df.drop(columns=PROFILE)
+    if no_vwap:
+        df = df.drop(columns=[c for c in df.columns if c.startswith(VWAP)])
     if kap_set != "all":
         kap_cols = [c for c in df.columns if c.startswith(("n_", "no_news", "days_since_")) or c == "ret_20_z_per_news"]
         keep = {"none": set(), "nonews": NONEWS}[kap_set]
@@ -70,16 +74,19 @@ def main() -> None:
     ap.add_argument("--mode", choices=("honest", "loyo"), default="honest")
     ap.add_argument("--models", default="")
     ap.add_argument("--kap-set", choices=("none", "nonews", "all"), default="none")
+    ap.add_argument("--no-vwap", action="store_true")
+    ap.add_argument("--out-dir", default="scores_v2")
     args = ap.parse_args()
-    OUT.mkdir(parents=True, exist_ok=True)
+    out = INTERIM / args.out_dir
+    out.mkdir(parents=True, exist_ok=True)
 
     df, cases = load(WINDOW)
-    df = prepare(df, args.kap_set)
+    df = prepare(df, args.kap_set, args.no_vwap)
     in_eval = df["date"].dt.to_period("W-FRI").dt.end_time.dt.year.between(min(YEARS), max(YEARS))
     wanted = [m for m in args.models.split(",") if m] or [c.name for c in ALL_MODELS] + ["random"]
 
     for name in wanted:
-        path = OUT / f"{args.mode}_{args.kap_set}_{name}.parquet"
+        path = out / f"{args.mode}_{args.kap_set}_{name}.parquet"
         t0 = time.time()
         base = df.loc[in_eval, ["ticker", "date"]].copy()
         if name == "random":

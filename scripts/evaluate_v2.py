@@ -23,8 +23,11 @@ from bistmd.paths import DB_PATH, INTERIM, ROOT  # noqa: E402
 
 SCORES = INTERIM / "scores_v2"
 KS = (10, 20, 50)
-PERIODS = {"2017–2026": (2017, 2026), "2017–2021": (2017, 2021), "2022–2026": (2022, 2026)}
-MODEL_ORDER = ["random", "0a_kural", "0b_basit", "1_iforest", "2_lightgbm", "3a_pu_agirlikli", "3b_pu_bagging"]
+# 2017–2026 ana dönem (önceki sürümlerle karşılaştırılabilir); 2012–2016 eski bültenlerle eklenen yıllar
+PERIODS = {"2017–2026": (2017, 2026), "2017–2021": (2017, 2021), "2022–2026": (2022, 2026),
+           "2012–2016": (2012, 2016), "2012–2026": (2012, 2026)}
+MODEL_ORDER = ["random", "0a_kural", "0c_kural_vwap", "0b_basit", "1_iforest", "2_lightgbm", "3a_pu_agirlikli",
+               "3b_pu_bagging"]
 
 
 def load_cases():
@@ -125,7 +128,7 @@ def main() -> None:
         if sub.empty:
             continue
         lines += [f"## {title}", "", table(sub), ""]
-        for p in ("2017–2021", "2022–2026"):
+        for p in ("2017–2021", "2022–2026", "2012–2016", "2012–2026"):
             lines += [f"**{p}:**", "", table(sub, p), ""]
     q3 = res[(res["mode"] == "honest") & res["model"].isin(["2_lightgbm", "3b_pu_bagging"])]
     if q3["kap"].nunique() > 1:

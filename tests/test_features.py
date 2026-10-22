@@ -13,7 +13,7 @@ def _fake_prices(n=300, seed=0):
     mcap = close * 1e8
     return pd.DataFrame({
         "ticker": "TEST", "date": pd.bdate_range("2020-01-01", periods=n),
-        "close": close, "close_raw": close, "high_raw": high, "low_raw": low,
+        "close": close, "close_raw": close, "vwap": close * (1 + rng.normal(0, 0.003, n)), "high_raw": high, "low_raw": low,
         "value_try": rng.lognormal(15, 1, n), "mcap_try": mcap, "float_mcap_try": mcap * 0.3,
         "free_float": 0.3, "xu100": 1000 * np.exp(np.cumsum(rng.normal(0, 0.01, n))), "usdtry": 7.0,
     })
@@ -37,6 +37,15 @@ def test_limit_up_streak():
     f = ticker_features(p)
     assert f.loc[72, "limit_up_streak"] == 3
     assert f.loc[72, "limit_up_10"] >= 3
+
+
+def test_close_vs_vwap_flags_marking_the_close():
+    p = _fake_prices(80)
+    p.loc[70:, "vwap"] = p.loc[70:, "close"] / 1.03  # son 10 gün kapanış VWAP'ın %3 üstünde
+    f = ticker_features(p)
+    assert f.loc[79, "close_vs_vwap_5"] == pytest.approx(np.log(1.03))
+    assert f.loc[79, "close_above_vwap_10"] == 10
+    assert f.loc[60, "close_above_vwap_10"] < 10
 
 
 def test_value_ratio_excludes_today():

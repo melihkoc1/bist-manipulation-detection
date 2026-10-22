@@ -28,13 +28,15 @@ def _resolve_tickers(df: pd.DataFrame, header_col: str, universe: pd.DataFrame) 
     u = prepare_universe(universe)
     out = df.copy()
     out["ticker_raw"] = out["ticker"]
+    companies = out["company"] if "company" in out else pd.Series(None, index=out.index)
     resolved = []
-    for t, h in zip(out["ticker"], out[header_col].fillna("")):
+    for t, h, c in zip(out["ticker"], out[header_col].fillna(""), companies):
         t = None if pd.isna(t) else t
+        c = None if pd.isna(c) else c
         if t in aliases:
             resolved.append((aliases[t], "renamed"))
         else:
-            resolved.append(resolve(t, h, u))
+            resolved.append(resolve(t, h, u, company=c))
     out["ticker"] = [r[0] for r in resolved]
     out["ticker_status"] = [r[1] for r in resolved]
     return out

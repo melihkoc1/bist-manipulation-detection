@@ -52,13 +52,39 @@ def best_match(name: str, universe: pd.DataFrame, threshold: float = 0.85) -> st
     return universe.at[i, "ticker"] if scores[i] >= threshold else None
 
 
+# İlk kelimesi tek başına ayırt edici olmayan unvanlarda ilk iki kelime karşılaştırılır
+_GENERIC_FIRST = {"TÜRK", "TÜRKİYE", "İSTANBUL", "ANADOLU", "EGE", "AKDENİZ", "DOĞU", "BATI", "ULUSLARARASI"}
+
+
+def match_company(name: str, universe: pd.DataFrame) -> str | None:
+    """Eski bültenlerdeki unvanlar için daha sıkı eşleme: ayırt edici ilk kelime(ler) aynı olmalı
+    (ör. "Metro Menkul Kıymetler" ≠ "Ata Menkul Kıymetler", benzerlik 0,86 olsa da).
+    İlk kelime yazımı farklıysa ("Altınyunus" / "Altın Yunus") yalnızca çok yüksek benzerlik kabul edilir."""
+    target = normalize(name)
+    toks = target.split()
+    if not toks:
+        return None
+    key = tuple(toks[:2]) if toks[0] in _GENERIC_FIRST and len(toks) > 1 else tuple(toks[:1])
+    cand = universe[universe["norm"].str.split().map(lambda t: tuple(t[:len(key)]) == key)]
+    if not cand.empty:
+        scores = cand["norm"].map(lambda u: SequenceMatcher(None, target, u).ratio())
+        if scores.max() >= 0.6:
+            return cand.at[scores.idxmax(), "ticker"]
+    return best_match(name, universe, threshold=0.9)
+
+
 def prepare_universe(universe: pd.DataFrame) -> pd.DataFrame:
     u = universe.copy()
     u["norm"] = u["title"].map(normalize)
     return u
 
 
-def resolve(ticker: str | None, header: str, universe: pd.DataFrame) -> tuple[str | None, str]:
+def resolve(ticker: str | None, header: str, universe: pd.DataFrame,
+            company: str | None = None) -> tuple[str | None, str]:
+    """company: eski biçim bültenlerde kalemden çıkarılmış şirket unvanı (kod yazılmaz)."""
+    if company:
+        match = match_company(company, universe)
+        return (match, "by_name") if match else (None, "unresolved")
     listed = set(universe["ticker"])
     if ticker and ticker in listed:
         return ticker, "listed"
@@ -68,4 +94,13 @@ def resolve(ticker: str | None, header: str, universe: pd.DataFrame) -> tuple[st
         return (match, "renamed") if match else (ticker, "unlisted")
     name = company_without_ticker(header)
     match = best_match(name, universe) if name else None
-    return (match, "by_name") if match else (None, "unresolved")
+    if match:
+        return match, "by_name"
+    # Yedek: "X A.Ş. hisse senedinde" gibi kalıplar (2012–2015 bültenleri); yalnızca aksi halde
+    # düşecek kalemlere uygulanır, sıkı eşleme kullanılır
+    from bistmd.labels.spk_bulletins import company_names
+    for name in company_names(header):
+        match = match_company(name, universe)
+        if match:
+            return match, "by_name"
+    return None, "unresolved"
