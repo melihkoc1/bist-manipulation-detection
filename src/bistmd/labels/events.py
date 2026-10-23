@@ -49,7 +49,7 @@ def decisions_from_bulletins(items: pd.DataFrame, universe: pd.DataFrame) -> pd.
     df["decision_type"] = df["section"].where(df["category"] == "manipulation", "piyasa_tedbiri")
     df["decision_date"] = df["bulletin_date"]
     df["source"] = "bulletin"
-    df["ref"] = df["bulletin_year"].astype(str) + "/" + df["bulletin_no"].astype(str)
+    df["ref"] = df["bulletin_year"].astype("Int64").astype(str) + "/" + df["bulletin_no"].astype("Int64").astype(str)
     df["multi_stock"] = df["n_tickers"] >= MULTI_STOCK_MIN
     return df[_COLS]
 
