@@ -3,6 +3,34 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Güncelleme (23.10.2026): kural + ML birleşik skoru
+
+**Yöntem.**
+- Her hafta modellerin sıra yüzdelikleri eşit ağırlıkla ortalanır (`scripts/ensemble_v2.py`).
+- Ağırlıklar ve ana birleşim (kural + PU bagging) sonuçlara bakılmadan önceden belirlendi; test verisinde ayar yok.
+
+**Sonuç (dürüst, 2017–2026, 123 vaka).** Kural + PU, en iyi genel model:
+
+| | AUC | recall@20 (rastgele 0,23) | isabet@10 lift |
+|---|---|---|---|
+| Kural | 0,81 | 0,65 | 2,4× |
+| PU bagging | 0,83 | 0,62 | 3,5× |
+| **Kural + PU** | **0,85** | **0,67** | **3,4×** |
+
+Eşleştirilmiş testler:
+- Kural + PU, kuraldan AUC'de anlamlı biçimde iyi: +0,037 [+0,024, +0,049].
+- Kural + PU, PU bagging'den de anlamlı biçimde iyi: +0,016 [+0,003, +0,030].
+- Recall farkları (+2,4 ve +4,9 puan) anlamlı değil.
+- Pratik anlamı: birleşim, kuralların yakalama oranını ve ML'in liste isabetini aynı anda veriyor.
+
+Diğer birleşimler:
+- Kural + Isolation Forest + PU: en yüksek AUC (0,86), ama recall biraz daha düşük (0,64).
+- Kural + LightGBM: kural + PU'dan zayıf.
+
+Dönemlere göre:
+- 2012–2026 (184 vaka): kural + PU recall 0,71 (kural ile aynı), AUC 0,81 (kural 0,75), isabet 3,5× (kural 2,7×).
+- 2022–2026: kural + PU isabeti 3,0× (kural 1,7×, PU 3,9×), recall 0,51 (kural 0,54, PU 0,46). Yani bu dönemde iki ucun arasında kalıyor.
+
 ## Güncelleme (23.10.2026): 2009–2015 bültenleri ve kapanış/VWAP özellikleri
 
 **Ne değişti.**

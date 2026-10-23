@@ -27,7 +27,7 @@ KS = (10, 20, 50)
 PERIODS = {"2017–2026": (2017, 2026), "2017–2021": (2017, 2021), "2022–2026": (2022, 2026),
            "2012–2016": (2012, 2016), "2012–2026": (2012, 2026)}
 MODEL_ORDER = ["random", "0a_kural", "0c_kural_vwap", "0b_basit", "1_iforest", "2_lightgbm", "3a_pu_agirlikli",
-               "3b_pu_bagging"]
+               "3b_pu_bagging", "4_kural_pu", "4_kural_lgbm", "4_kural_iforest_pu"]
 
 
 def load_cases():
