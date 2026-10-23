@@ -1,4 +1,4 @@
-> **GÜNCEL DEĞİL:** Bu belgedeki olay bazlı recall rakamları rastgele tabana karşı ölçülmemişti (§7). Güncel ve doğru ölçülmüş sonuçlar: [sonuclar_v2.md](sonuclar_v2.md).
+> **GÜNCEL DEĞİL:** Bu belgedeki olay bazlı recall rakamları rastgele tabana karşı ölçülmemişti (§7). Güncel ve doğru ölçülmüş sonuçlar: [sonuclar_v2.md](../sonuclar_v2.md).
 
 # İlk Model Sonuçları (v1) — Özet ve Yorum
 
@@ -6,7 +6,7 @@
 **Protokol:** Eğitim 2012–2021 (dürüst mod: yalnızca 2021 sonuna kadar açıklanmış SPK vakaları
 pozitif), doğrulama 2022, test 2023–24, ileriye dönük 2025–26. Model 2021 sonunda dondurulur.
 **Senaryo:** Analist her hafta modelin en şüpheli gördüğü k hisseye bakar.
-Ayrıntılı tablolar: `docs/sonuclar_w{3,6,12}*.md`.
+Ayrıntılı tablolar: `docs/arsiv_v1/sonuclar_w{3,6,12}*.md`.
 
 ## 1. Ana tablo (6 aylık pencere, haftalık ilk 20 liste)
 

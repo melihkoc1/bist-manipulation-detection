@@ -7,7 +7,7 @@ Kullanım:
 --window     Dönemi bilinmeyen vakalar için karar öncesi pencere (3/6/12 ay)
 --hindsight  Eğitimde sonradan açıklanan kararları da kullan. Varsayılan (dürüst mod):
              yalnızca eğitim döneminin sonuna kadar SPK'nın açıkladığı vakalar pozitiftir.
-Çıktı: data/interim/results/results_w{window}.parquet ve docs/sonuclar_w{window}.md
+Çıktı: data/interim/results/results_w{window}.parquet ve docs/sonuclar_w{window}.md (v1 değerlendirmesi; eski çıktılar docs/arsiv_v1/ altında)
 """
 
 import argparse
