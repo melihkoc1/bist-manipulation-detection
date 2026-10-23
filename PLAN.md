@@ -61,7 +61,7 @@ fiyat verisi bulunan farklı olay sayısı **≥ 40 → devam**, **20–40 → g
 | Veri işleme | `pandas` (gerekirse `polars`) | Standart |
 | Depolama | **DuckDB** (tek dosya) + ham dosyalar `data/raw/` | Sunucusuz, SQL, Parquet ile uyumlu |
 | PDF | `pymupdf` / `pdfplumber` | Bülten metni çıkarma |
-| Etiket çıkarma | Kural tabanlı regex + **LLM (Claude API, yapılandırılmış çıktı)** | Hisse kodu, karar türü, dönem |
+| Etiket çıkarma | Kural tabanlı regex (eski ve yeni bülten biçimleri) | Hisse kodu, karar türü, dönem |
 | ML | `scikit-learn`, `lightgbm`, PU için kendi Elkan–Noto + nnPU implementasyonu | Kontrol ve şeffaflık |
 | Açıklanabilirlik | `shap` | Alarm gerekçeleri |
 | Dashboard | `streamlit` | Hızlı prototip |
