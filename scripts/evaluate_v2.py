@@ -111,10 +111,12 @@ def main() -> None:
     (INTERIM / "results").mkdir(parents=True, exist_ok=True)
     res.to_csv(INTERIM / "results" / "v2_all.csv", index=False)
 
-    n = int(res["n_cases"].max())
+    n = res.groupby("period")["n_cases"].max()
     lines = ["# Değerlendirme v2 — rastgele tabana karşı", "",
              "Vakalar: manipülasyon dönemi SPK kararında yazan ana set vakaları (kısa pencere, medyan 22 gün), "
-             f"2017–2026 başlayan, fiyat verisi olan: **{n} vaka**. Haftalık liste: ~556 hisseden ilk k.",
+             f"fiyat verisi olan: 2017–2026 başlayan **{int(n['2017–2026'])} vaka** (ana dönem), "
+             f"2012–2016 başlayan {int(n['2012–2016'])} vaka (2009–2015 bültenleriyle eklendi). "
+             "Haftalık liste: ~556 hisseden ilk k.",
              "Rastgele = her vaka için analitik yakalanma olasılığı. Lift = recall / rastgele. "
              "AUC: haftalık kesitsel yüzdelik; pozitif = vaka dönemi haftaları, negatif = hiçbir vaka penceresine "
              "(12 ay, ana set dışı dahil) değmeyen haftalar. GA: vaka kümesi bootstrap'i. "

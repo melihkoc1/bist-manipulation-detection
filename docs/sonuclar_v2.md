@@ -1,6 +1,6 @@
 # Değerlendirme v2 — rastgele tabana karşı
 
-Vakalar: manipülasyon dönemi SPK kararında yazan ana set vakaları (kısa pencere, medyan 22 gün), 2017–2026 başlayan, fiyat verisi olan: **184 vaka**. Haftalık liste: ~556 hisseden ilk k.
+Vakalar: manipülasyon dönemi SPK kararında yazan ana set vakaları (kısa pencere, medyan 22 gün), fiyat verisi olan: 2017–2026 başlayan **125 vaka** (ana dönem), 2012–2016 başlayan 59 vaka (2009–2015 bültenleriyle eklendi). Haftalık liste: ~556 hisseden ilk k.
 Rastgele = her vaka için analitik yakalanma olasılığı. Lift = recall / rastgele. AUC: haftalık kesitsel yüzdelik; pozitif = vaka dönemi haftaları, negatif = hiçbir vaka penceresine (12 ay, ana set dışı dahil) değmeyen haftalar. GA: vaka kümesi bootstrap'i. İsabet@10 lift: haftalık ilk 10'un 6 aylık vaka pencerelerine denk gelme oranı / taban oran.
 
 ## Dürüst yıllık eğitim (ana sonuç) — KAP özellikleri yok
@@ -112,3 +112,31 @@ Rastgele = her vaka için analitik yakalanma olasılığı. Lift = recall / rast
 | 0a_kural | 0.75 [0.72–0.78] | 0.71 (0.29) | 2.5 [2.2–2.8] | 0.84 (0.51) | 0.70 (0.25) | 8 | 2.7× |
 | 2_lightgbm | 0.79 [0.75–0.83] | 0.66 (0.29) | 2.3 [2.0–2.6] | 0.79 (0.51) | 0.65 (0.25) | 8 | 4.2× |
 | 3b_pu_bagging | 0.80 [0.76–0.84] | 0.65 (0.29) | 2.2 [2.0–2.6] | 0.80 (0.51) | 0.64 (0.25) | 8 | 4.2× |
+
+## Tez sorusu 3 — KAP özellik kümeleri (dürüst, 2017–2026)
+
+| model         |   ('auc', 'all') |   ('auc', 'none') |   ('auc', 'nonews') |   ('lift@20', 'all') |   ('lift@20', 'none') |   ('lift@20', 'nonews') |   ('plift@10', 'all') |   ('plift@10', 'none') |   ('plift@10', 'nonews') |
+|:--------------|-----------------:|------------------:|--------------------:|---------------------:|----------------------:|------------------------:|----------------------:|-----------------------:|-------------------------:|
+| 2_lightgbm    |            0.772 |             0.806 |               0.804 |                2.313 |                 2.555 |                   2.417 |                 2.949 |                  3.367 |                    3.394 |
+| 3b_pu_bagging |          nan     |             0.833 |               0.832 |              nan     |                 2.693 |                   2.624 |               nan     |                  3.506 |                    3.422 |
+
+## Eşleştirilmiş karşılaştırmalar (aynı vakalar, bootstrap %95 GA, 2017–2026)
+
+| karşılaştırma                                      |   vaka |   AUC farkı | AUC GA           | AUC anlamlı   |   recall@20 farkı | recall GA        | recall anlamlı   |
+|:---------------------------------------------------|-------:|------------:|:-----------------|:--------------|------------------:|:-----------------|:-----------------|
+| Daha çok etiket: LightGBM yeni etiketler vs önce   |    123 |      +0.049 | [+0.023, +0.079] | evet          |            +0.057 | [-0.033, +0.146] | hayır            |
+| Daha çok etiket: PU bagging yeni etiketler vs önce |    123 |      +0.024 | [+0.005, +0.046] | evet          |            +0.016 | [-0.049, +0.081] | hayır            |
+| VWAP: kural+VWAP vs kural                          |    123 |      +0.007 | [+0.001, +0.013] | evet          |            -0.033 | [-0.081, +0.016] | hayır            |
+| VWAP: LightGBM VWAP'lı vs VWAP'sız                 |    123 |      -0.000 | [-0.010, +0.009] | hayır         |            +0.024 | [-0.033, +0.081] | hayır            |
+| VWAP: PU bagging VWAP'lı vs VWAP'sız               |    123 |      +0.003 | [-0.004, +0.010] | hayır         |            +0.041 | [-0.008, +0.098] | hayır            |
+| Toplam: PU bagging şimdi vs önce                   |    123 |      +0.027 | [+0.006, +0.051] | evet          |            +0.057 | [-0.016, +0.130] | hayır            |
+| Toplam: PU bagging vs kural+VWAP                   |    123 |      +0.014 | [-0.011, +0.038] | hayır         |            +0.008 | [-0.065, +0.089] | hayır            |
+| Soru 2: PU bagging vs gözetimli                    |    123 |      +0.028 | [+0.013, +0.044] | evet          |            +0.016 | [-0.041, +0.081] | hayır            |
+| Soru 2: PU ağırlıklı vs gözetimli                  |    123 |      +0.028 | [+0.014, +0.044] | evet          |            +0.000 | [-0.057, +0.057] | hayır            |
+| ML vs kural: PU bagging vs kural                   |    123 |      +0.021 | [-0.005, +0.046] | hayır         |            -0.024 | [-0.106, +0.057] | hayır            |
+| ML vs kural: LightGBM vs kural                     |    123 |      -0.008 | [-0.038, +0.021] | hayır         |            -0.041 | [-0.122, +0.041] | hayır            |
+| Gözetimsiz: Isolation Forest vs kural              |    123 |      +0.010 | [-0.013, +0.035] | hayır         |            -0.089 | [-0.154, -0.024] | evet             |
+| Etiket bolluğu: LightGBM hindsight vs dürüst       |    123 |      +0.032 | [+0.013, +0.052] | evet          |            +0.024 | [-0.041, +0.089] | hayır            |
+| Soru 3: LightGBM habersiz hareket vs KAP yok       |    123 |      -0.002 | [-0.012, +0.007] | hayır         |            -0.033 | [-0.073, +0.000] | hayır            |
+| Soru 3: LightGBM tüm KAP vs KAP yok                |    123 |      -0.035 | [-0.063, -0.010] | evet          |            -0.057 | [-0.138, +0.024] | hayır            |
+| Soru 3: PU bagging habersiz hareket vs KAP yok     |    123 |      -0.002 | [-0.006, +0.002] | hayır         |            -0.016 | [-0.057, +0.024] | hayır            |
