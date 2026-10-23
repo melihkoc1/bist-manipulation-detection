@@ -3,12 +3,14 @@
 [![tests](https://github.com/melihkoc1/bist-manipulation-detection/actions/workflows/tests.yml/badge.svg)](https://github.com/melihkoc1/bist-manipulation-detection/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+**English** | [Türkçe](README.tr.md)
+
 An early-warning system for **pump-and-dump manipulation** in Borsa Istanbul (BIST) stocks,
 built from daily market data, company disclosures (KAP) and 17 years of regulator decisions
 (SPK). Every week it ranks ~550 stocks by how suspicious their trading looks. It is evaluated
 against real enforcement cases with a strict, look-ahead-free protocol.
 
-*Undergraduate thesis project · Melih Erdem Koçoğlu · 2026–2027 · [Türkçe özet aşağıda](#türkçe-özet)*
+*Undergraduate thesis project · Melih Erdem Koçoğlu · 2026–2027*
 
 > Scores are **statistical anomaly signals, not accusations**. Companies named in this
 > repository appear only because the Capital Markets Board of Turkey (SPK) published a
@@ -205,27 +207,10 @@ docs/         results, interpretation, validation, case studies (Turkish)
 - Raw data is not redistributed.
 - Personal data in SPK decisions (names, ID numbers) is never stored in processed tables.
 
-## Türkçe özet
+## Türkçe
 
-**Ne yapar?**
-- Borsa İstanbul'da pompala-boşalt türü manipülasyonu günlük fiyat, hacim ve KAP verisiyle
-  erken tespit etmeye çalışan bir erken uyarı sistemi.
-- Her hafta ~550 hisseyi şüphe düzeyine göre sıralar.
-- 2009–2026 SPK bültenlerinden çıkarılan gerçek vakalarla, geleceği görmeyen ("dürüst")
-  bir protokolle test edildi.
-
-**Sonuçlar.**
-- Kural + PU öğrenme birleşimi, dönemi bilinen vakaların **%67'sini** haftalık ilk 20 listede
-  yakalıyor. Rastgele seçimle bu oran %23.
-- Yakalanan vakaların çoğunda alarm fiyat zirvesinden önce geliyor.
-- Alarm, SPK'nın ilk cezasından medyan **13 ay** önce geliyor.
-
-**Tez soruları.**
-1. Erken tespit mümkün mü? **Evet.**
-2. PU öğrenme daha iyi mi? **Kısmen evet.**
-3. Habersiz hareket özellikleri işe yarıyor mu? **Hayır.**
-
-**Belgeler.** Ayrıntılı sonuçlar ve yorumlar `docs/` klasöründe, Türkçe.
+Bu belgenin tam Türkçe sürümü: [README.tr.md](README.tr.md). Ayrıntılı sonuç ve yorum belgeleri
+(`docs/`) Türkçedir.
 
 ## License
 
