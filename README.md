@@ -181,6 +181,25 @@ python -m pytest
 Some paired comparisons in `compare_v2.py` reference earlier score snapshots
 (`scores_v2_before`, `scores_v2_novwap`). They are skipped when those folders are missing.
 
+## Demo app
+
+A local Streamlit app for presenting the project (English / Turkish). It needs the data pipeline
+below to have been run.
+
+```bash
+.venv/Scripts/python -m pip install -e ".[app]"
+.venv/Scripts/python -m streamlit run app/streamlit_app.py      # opens http://localhost:8501
+```
+
+| Page | What it shows |
+|---|---|
+| **Time machine** | Pick any week from 2012–2026 and see the system's top-20 list for that week, built without any later information, plus which listed stocks later turned out to be SPK cases. |
+| **Stock detail** | Price, volume and weekly rank for one stock, with SPK manipulation periods and decisions marked, and its KAP disclosures. |
+| **Results** | Performance vs random, timing vs the regulator, thesis answers, case studies. |
+| **Method** | How the pipeline works. |
+
+The app only reads local data and listens on `localhost` only.
+
 ## Repository layout
 
 ```
@@ -191,6 +210,7 @@ src/bistmd/
   models/     rules, Isolation Forest, LightGBM, PU learning
   eval/       weekly ranking metrics, random baseline, bootstrap
 scripts/      pipeline entry points (scoring, ensemble, evaluation, case studies)
+app/          Streamlit demo app (time machine, stock detail, results, method)
 tests/        68 unit tests (no data needed), incl. look-ahead tests for features
 docs/         results, interpretation, validation, case studies (Turkish)
 ```

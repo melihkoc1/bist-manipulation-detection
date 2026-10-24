@@ -9,3 +9,6 @@ __pycache__/
 data/raw/
 data/interim/
 data/db/
+
+# Yerel araç ayarları
+.claude/

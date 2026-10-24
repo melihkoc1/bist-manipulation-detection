@@ -1,0 +1,12 @@
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+address = "localhost"  # yalnızca bu bilgisayardan erişilebilir
+
+[theme]
+primaryColor = "#2a9d8f"
+
+[client]
+toolbarMode = "viewer"  # sunumda "Deploy" düğmesi görünmesin

@@ -174,6 +174,25 @@ python -m pytest
 
 `compare_v2.py` içindeki bazı eşleştirilmiş karşılaştırmalar daha önceki skor anlık görüntülerini kullanır (`scores_v2_before`, `scores_v2_novwap`). Bu klasörler yoksa o karşılaştırmalar atlanır.
 
+## Tanıtım uygulaması
+
+Projeyi göstermek için yerel bir Streamlit uygulaması (Türkçe / İngilizce). Çalışması için aşağıdaki
+veri hattının çalıştırılmış olması gerekir.
+
+```bash
+.venv/Scripts/python -m pip install -e ".[app]"
+.venv/Scripts/python -m streamlit run app/streamlit_app.py      # http://localhost:8501 açılır
+```
+
+| Sayfa | Ne gösteriyor? |
+|---|---|
+| **Zaman makinesi** | 2012–2026 arasından herhangi bir hafta seçilir. Sistemin o hafta, sonradan öğrenilen hiçbir bilgiyi kullanmadan üreteceği ilk 20 listesi gösterilir. Listedeki hisselerden hangilerinin sonradan SPK vakası olduğu işaretlenir. |
+| **Hisse detayı** | Bir hissenin fiyatı, hacmi ve haftalık sırası. SPK'nın belirttiği manipülasyon dönemleri ve SPK kararları grafikte işaretlidir; hissenin KAP bildirimleri listelenir. |
+| **Sonuçlar** | Rastgeleye göre başarı, SPK'ya göre zaman kazancı, tez soruları ve vaka çalışmaları. |
+| **Yöntem** | Sistemin nasıl çalıştığı. |
+
+Uygulama yalnızca yerel veriyi okur ve yalnızca `localhost` üzerinden erişilebilir.
+
 ## Depo yapısı
 
 ```
@@ -184,6 +203,7 @@ src/bistmd/
   models/     kurallar, Isolation Forest, LightGBM, PU öğrenme
   eval/       haftalık sıralama ölçütleri, rastgele taban, bootstrap
 scripts/      çalıştırma betikleri (puanlama, birleşim, değerlendirme, vaka çalışmaları)
+app/          Streamlit tanıtım uygulaması (zaman makinesi, hisse detayı, sonuçlar, yöntem)
 tests/        68 birim testi (veri gerektirmez), özellikler için geleceği görme testleri dahil
 docs/         sonuçlar, yorum, doğrulama, vaka çalışmaları
 ```
