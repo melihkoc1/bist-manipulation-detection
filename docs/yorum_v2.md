@@ -3,6 +3,68 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.10.2026): dönemi bilinmeyen vakaların eğitim etiketi — olumsuz sonuç
+
+> Bu deneyin kodu depoya alınmadı. Ana sonuçlar varsayılan yöntemle (karardan önceki 6 ay) üretildi.
+> Aşağıdaki sayılar, deneme sırasında yerelde çalıştırılan kodla elde edildi.
+
+**Soru.**
+- 402 fiyatlı ana set vakasının 230'unda SPK manipülasyon dönemini yazmıyor.
+- Bu vakalarda eğitim etiketi "ilk karardan önceki 6 ay"dı.
+- Bu etiket ne kadar doğru, daha iyisi yapılabilir mi?
+
+**Bulgu 1 — SPK'nın ilk kararı dönemden çok sonra gelebiliyor.** Dönemi bilinen 172 vakada:
+
+| İlk SPK kararı | Vaka | Dönem sonu → ilk karar (medyan) | 6 aylık pencere gerçek dönemle örtüşüyor |
+|---|---|---|---|
+| Tedbir / işlem yasağı | 79 | 36 gün | %61 |
+| Ceza / suç duyurusu | 93 | 338 gün | %18 |
+
+- Dönem başlangıcı, ilk karardan medyan 344 gün önce (%75'lik dilim: 704 gün).
+- Dönemi bilinmeyen vakaların çoğunda ilk karar ceza. Bu vakalarda 6 aylık pencere büyük olasılıkla gerçek dönemi kaçırıyor.
+- Ölçüm: 6 aylık pencerede etiketlenen günlerin yalnızca **%11'i** gerçek dönemin içinde.
+- Bu pencereler, dürüst eğitimdeki pozitif günlerin yaklaşık %61'ini oluşturuyor.
+
+**Denenen dönem tahmincisi.**
+- **Arama alanı.** İlk karar tedbir ise karardan önceki 6 ay, ceza ise 24 ay.
+- **Seçilen aralık.** Alan içinde hissenin endekse göre en sert yükseldiği aralık:
+  - puan: endeks üstü log getiri / √gün;
+  - uzunluk: 5–120 işlem günü.
+- **Ön kayıt.** Kurallar sonuçlara bakılmadan sabitlendi.
+
+**Tahmincinin doğruluğu** (dönemi bilinen vakalarda dönem gizlenerek):
+
+| Yöntem | Gerçek dönemle örtüşme | Etiketlenen günlerin gerçek dönemde olma oranı | Gerçek dönemin kapsanan kısmı |
+|---|---|---|---|
+| 6 ay (varsayılan) | %38 | %11 | %32 |
+| Tahmin | %38 | **%32** | %15 |
+
+- Tahminci, etiket isabetini yaklaşık 3 katına çıkarıyor.
+- Ama kısa dönemler seçiyor: medyan 8 gün, gerçekte 48 gün.
+
+**Eğitim deneyi** (dürüst yıllık eğitim, 2017–2026, 123 vaka, eşleştirilmiş bootstrap). Dönemi bilinmeyen vakalar için üç etiket yöntemi denendi:
+- **6 ay:** varsayılan yöntem.
+- **Çıkar:** arama alanı eğitimden çıkarıldı.
+- **Tahmin:** tahmin edilen aralık pozitif, alanın geri kalanı eğitim dışı.
+
+| Model | AUC (6 ay / çıkar / tahmin) | recall@20 (6 ay / çıkar / tahmin) |
+|---|---|---|
+| LightGBM | 0,806 / 0,801 / 0,813 | 0,59 / 0,55 / 0,58 |
+| PU bagging | 0,833 / 0,828 / 0,833 | 0,62 / 0,57 / 0,58 |
+| Kural + PU | 0,849 / 0,844 / 0,844 | 0,67 / 0,65 / 0,68 |
+
+- **Varsayılana göre.** Ne "çıkar" ne "tahmin", 6 aylık varsayılandan anlamlı biçimde farklı. Örnek: kural + PU tahmin − 6 ay: AUC −0,005 [−0,011, +0,002].
+- **Tahmin, çıkar'dan anlamlı biçimde iyi** (AUC):
+  - LightGBM: +0,012 [+0,004, +0,021]
+  - PU bagging: +0,005 [+0,001, +0,009]
+- **Sonuç.** Tahmin edilen dönemler gerçek bilgi taşıyor, ama kaba 6 aylık pencerelerden daha fazlasını değil.
+
+**Yorum (tez için).**
+- **Gürültüye dayanıklılık.** Modeller etiket gürültüsüne dayanıklı: etiket günlerinin ~%90'ı yanlış yerde olsa da 6 aylık pencereler zarar vermiyor. Olası nedenler:
+  - Model "bu dönem manipülasyon" kadar "bu tür hisseler şüpheli davranır" bilgisini de öğreniyor. Manipüle edilen hisseler, asıl dönem dışında da sık sık anormal hareket ediyor.
+  - PU öğrenme, eksik ve gürültülü pozitif varsayımıyla tasarlanmış.
+- **Neyin işe yaradığı.** Bu bulgu, eski bültenlerle elde edilen iyileşmeyle birlikte okunmalı: performansı etiketlerin temizliği değil, **vaka sayısı** belirliyor.
+
 ## Güncelleme (23.10.2026): kural + ML birleşik skoru
 
 **Yöntem.**
