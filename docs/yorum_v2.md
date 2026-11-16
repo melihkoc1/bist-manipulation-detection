@@ -3,6 +3,53 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Sağlamlık testleri (17.11.2026, Linear MEL-15)
+
+Tablolar: [saglamlik.md](saglamlik.md) (`scripts/robustness.py`). Dürüst skorlar, 2012–2026, 184 vaka.
+
+**1. Liste uzunluğu (k).** Kural + PU her k'da rastgeleyi anlamlı biçimde geçiyor (GA'ların alt sınırı
+hep 1'in üstünde). 2017–2026:
+
+| k | 5 | 10 | 20 | 30 | 50 | 100 |
+|---|---|---|---|---|---|---|
+| Yakalama (rastgele) | 0,40 (0,07) | 0,58 (0,13) | 0,67 (0,23) | 0,73 (0,32) | 0,80 (0,45) | 0,94 (0,67) |
+| Lift | 5,9× | 4,6× | 2,9× | 2,3× | 1,8× | 1,4× |
+
+- Liste kısaldıkça sistemin rastgeleye üstünlüğü artıyor: en tepedeki 5 hisse en isabetli kısım.
+- Kural + PU, k ≤ 10'da kurallardan da PU'dan da belirgin iyi (k = 10: 0,58 vs 0,49 / 0,46).
+- k = 20 seçimi sonuçları en iyi gösteren nokta değil, orta bir nokta.
+
+**2. Yıllar.** Lift 15 yılın 12'sinde güven aralığıyla rastgelenin üstünde. Zayıf yıllar:
+- **2012–2013** (lift 1,2× ve 1,6×, GA 1'i içeriyor): ilk dürüst modeller çok az geçmiş vakayla
+  eğitildi; ayrıca bu yılların vakaları uzun süreli (2012'de rastgele bile %72 yakalıyor).
+- **2022** (1,6×, GA [0,9–2,4]): Borsa İstanbul'un çok güçlü yükseldiği yıl. Birçok hisse aynı
+  anda yükseldiği için manipüle edilen hisseler ayrışmıyor (KONYA vakasıyla tutarlı).
+- **2020** (2,0×): pandemi dalgalanması; yine anlamlı ama ortalamanın altında.
+- En güçlü yıllar 2017–2018, 2021, 2023, 2025 (3,6–5,6×).
+
+**3. Şirket büyüklüğü** (dönem başındaki piyasa değeri, o yılın medyanına oranla; 3 eşit grup;
+179 vaka, 5 vakada piyasa değeri yok). Lift küçük/orta/büyük hisselerde 2,6× / 2,5× / 2,7×.
+Sistem yalnızca küçük, sığ hisselerde çalışan bir şey değil. Küçük hisselerde yakalama oranı daha
+yüksek (%80) ama rastgele taban da daha yüksek.
+
+**4. Vaka süresi** (en önemli bulgu):
+
+| Süre | Vaka | Yakalama | Rastgele | Lift |
+|---|---|---|---|---|
+| Kısa (≤45 gün) | 124 | 0,65 | 0,16 | 4,1× |
+| Orta (46–120) | 40 | 0,78 | 0,44 | 1,8× |
+| Uzun (>120) | 20 | 0,95 | 0,79 | 1,2× |
+
+- Vakaların üçte ikisi kısa ve sistemin asıl değeri orada (4,1×).
+- Uzun vakaları rastgele liste de neredeyse her zaman "yakalıyor". Bu, ilk değerlendirmenin
+  (v1) neden yanıltıcı olduğunu sayılarla gösteriyor: uzun pencerelerde başarı oranı tek başına
+  bir şey söylemez.
+- Uzun vakalarda PU bagging rastgeleden ayırt edilemiyor (1,1×, GA [0,8–1,3]).
+
+**Sonuç.** Ana bulgu (rastgeleden ~3 kat iyi) liste uzunluğu, yıl, şirket büyüklüğü ve vaka
+süresi kesitlerinde ayakta kalıyor. Zayıf noktalar açıkça belli: piyasa genelinde güçlü yükseliş
+yılları (2022) ve uzun süren, yavaş manipülasyonlar.
+
 ## Deneme (17.11.2026): birleşim ağırlıklarını geçmişten öğrenmek — kazanç yok (Linear MEL-12)
 
 > Bu deneyin kodu depoya alınmadı. Ana birleşim eşit ağırlıklı kalıyor.
