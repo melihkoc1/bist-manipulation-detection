@@ -181,24 +181,29 @@ python -m pytest
 Some paired comparisons in `compare_v2.py` reference earlier score snapshots
 (`scores_v2_before`, `scores_v2_novwap`). They are skipped when those folders are missing.
 
-## Demo app
+## Demo site
 
-A local Streamlit app for presenting the project (English / Turkish). It needs the data pipeline
-below to have been run.
+A local website for presenting the project (React + TypeScript + Vite; English / Turkish, light /
+dark theme, mobile-friendly). It needs the data pipeline above to have been run; its data is
+produced by `scripts/export_web.py` (`web/public/data/`, not in the repository).
 
 ```bash
-.venv/Scripts/python -m pip install -e ".[app]"
-.venv/Scripts/python -m streamlit run app/streamlit_app.py      # opens http://localhost:8501
+.venv/Scripts/python scripts/export_web.py      # ~2 min, ~115 MB of JSON
+cd web && npm install && npm run dev            # opens http://localhost:5173
 ```
 
 | Page | What it shows |
 |---|---|
-| **Time machine** | Pick any week from 2012–2026 and see the system's top-20 list for that week, built without any later information, plus which listed stocks later turned out to be SPK cases. |
-| **Stock detail** | Price, volume and weekly rank for one stock, with SPK manipulation periods and decisions marked, and its KAP disclosures. |
-| **Results** | Performance vs random, timing vs the regulator, thesis answers, case studies. |
-| **Method** | How the pipeline works. |
+| **Overview** | Key results (each next to its random baseline), a "3× better than random" visual, a featured case. |
+| **Time machine** | Pick any week from 2012–2026 and a model. See the top 10/20/50 list the system produced that week without any later information, the rules that fired for each stock, and which ones later got an SPK decision. |
+| **Stock detail** | Price, volume and weekly rank (3 panels) with SPK periods, SPK decisions and the first alarm marked; "why suspicious?" for a chosen week; SPK decision timeline; KAP disclosures. |
+| **Case studies** | 3 caught and 2 missed cases, with the sequence of events and lessons. |
+| **Results** | Period selector, model comparison, timing vs the regulator, thesis answers, experiment log. |
+| **Live test · Method · About** | Prospective test plan, method and ethics, project info. |
 
-The app only reads local data and listens on `localhost` only.
+The site listens on `localhost` only; real weekly lists are never published online. Design files
+are in `design/`. The earlier Streamlit app (`app/`) still works:
+`.venv/Scripts/python -m streamlit run app/streamlit_app.py`.
 
 ## Repository layout
 
@@ -210,7 +215,9 @@ src/bistmd/
   models/     rules, Isolation Forest, LightGBM, PU learning
   eval/       weekly ranking metrics, random baseline, bootstrap
 scripts/      pipeline entry points (scoring, ensemble, evaluation, case studies)
-app/          Streamlit demo app (time machine, stock detail, results, method)
+web/          demo site (React + TypeScript), data from scripts/export_web.py
+app/          earlier Streamlit demo app
+design/       approved design files for the demo site
 tests/        68 unit tests (no data needed), incl. look-ahead tests for features
 docs/         results, interpretation, validation, case studies (Turkish)
 ```

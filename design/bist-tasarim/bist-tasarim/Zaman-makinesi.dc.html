@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zaman makinesi — BIST Manipülasyon Tespiti</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.app{--bg:#f5f6f3;--surface:#ffffff;--surface-2:#eef1ef;--line:#dde2df;--line-2:#c5ccc9;--text:#13212b;--muted:#4f5c66;--faint:#66727b;--teal:#2a9d8f;--teal-ink:#1b6f65;--teal-soft:#e2f1ee;--btn:#1b6f65;--btn-fg:#ffffff;--orange:#f4a261;--orange-soft:#fdeddc;--orange-ink:#8a4a10;--red:#e63946;--red-ink:#b0121e;--red-soft:#fce7e9;--green:#2f9e44;--green-ink:#1d6b2e;--green-soft:#e3f2e6;--amber-ink:#7a5000;--amber-soft:#fbefd2;--gray-soft:#eceeed;--gray-ink:#4b555c;--rand:#a3abb0;--grid:#e6eae8;font-family:Inter,"IBM Plex Sans",system-ui,sans-serif;font-feature-settings:"tnum" 1;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+.app.dark{--bg:#0c141e;--surface:#121c28;--surface-2:#172433;--line:#223244;--line-2:#31465c;--text:#e4ebf1;--muted:#a2b0bd;--faint:#8a99a7;--teal-ink:#5cc6b8;--teal-soft:#123433;--btn:#2a9d8f;--btn-fg:#06121a;--orange-soft:#3a2816;--orange-ink:#f7b98a;--red-ink:#ff7d86;--red-soft:#3b1820;--green:#3fb55a;--green-ink:#77d590;--green-soft:#14301e;--amber-ink:#f1c869;--amber-soft:#332a10;--gray-soft:#1d2a38;--gray-ink:#b0bcc7;--rand:#5f6e7c;--grid:#1c2a39}
+.app *{box-sizing:border-box}
+.app h1,.app h2,.app h3,.app p{margin:0}
+.app a{color:var(--teal-ink)}
+.app a:hover{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);text-decoration:none}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{color:var(--text);background:var(--teal-soft);box-shadow:inset 0 -2px 0 var(--teal)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;text-decoration:none;border:1px solid var(--line-2);background:var(--surface);color:var(--text);cursor:pointer}
+.app a.btn{color:var(--text)}
+.btn.primary,.app a.btn.primary{background:var(--btn);border-color:var(--btn);color:var(--btn-fg)}
+.seg{display:inline-flex;flex-wrap:wrap;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);gap:2px}
+.seg button{min-height:36px;padding:0 12px;border:0;border-radius:7px;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.icon-btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-green{background:var(--green-soft);color:var(--green-ink)}
+.b-amber{background:var(--amber-soft);color:var(--amber-ink)}
+.b-gray{background:var(--gray-soft);color:var(--gray-ink)}
+.b-red{background:var(--red-soft);color:var(--red-ink)}
+.b-teal{background:var(--teal-soft);color:var(--teal-ink)}
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--surface-2);border:1px solid var(--line);color:var(--text);white-space:nowrap}
+.ex{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);font-family:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.ex.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-ink)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.t{width:100%;border-collapse:collapse;font-size:14px}
+.t th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface-2)}
+.t td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t tr.sel td{background:var(--teal-soft)}
+.t tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--teal)}
+.rowbtn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:transparent;padding:4px 0;font-family:inherit;color:var(--text);cursor:pointer;text-align:left;min-height:40px;justify-content:center}
+.rowbtn:hover strong{text-decoration:underline}
+.app input[type=range]{width:100%;accent-color:#2a9d8f}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height: 100%; display: flex; flex-direction: column">
+<header style="background: var(--surface); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 12px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text)">
+<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1b6f65"></rect><path d="M6 20 L11 20 L14 11 L18 23 L21 15 L26 15" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="26" cy="15" r="2.2" fill="#f4a261"></circle></svg>
+<span style="font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--text)">BIST Manipülasyon Tespiti</span>
+</a>
+<nav aria-label="Ana menü" class="nav" style="display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 640px">
+<a href="Main.dc.html">Genel bakış</a>
+<a href="Zaman-makinesi.dc.html" class="on" aria-current="page">Zaman makinesi</a>
+<a href="Hisse-detayi.dc.html">Hisse detayı</a>
+<a href="Vaka-calismalari.dc.html">Vaka çalışmaları</a>
+<a href="Sonuclar.dc.html">Sonuçlar</a>
+<a href="Canli-test.dc.html">Canlı test</a>
+<a href="Yontem.dc.html">Yöntem</a>
+<a href="Hakkinda.dc.html">Hakkında</a>
+</nav>
+<div style="display: flex; gap: 8px; align-items: center">
+<div class="seg" role="group" aria-label="Dil seçimi"><button type="button" class="{{trCls}}" aria-pressed="{{isTR}}" onClick="{{setTR}}">TR</button><button type="button" class="{{enCls}}" aria-pressed="{{isEN}}" onClick="{{setEN}}">EN</button></div>
+<button type="button" class="icon-btn" aria-label="{{themeLabel}}" onClick="{{toggleDark}}">
+<sc-if value="{{dark}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if>
+<sc-if value="{{light}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></sc-if>
+</button>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1360px; margin: 0 auto; padding: 32px clamp(16px, 3vw, 40px) 56px; display: flex; flex-direction: column; gap: 20px">
+
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="font-size: 30px; font-weight: 700; letter-spacing: -.02em">Zaman makinesi</h1>
+<p style="font-size: 15px; color: var(--muted); max-width: 720px">Geçmiş bir hafta seçin: sistemin o hafta ne listelediğini ve SPK'nın sonradan ne yaptığını yan yana görün.</p>
+</div>
+</div>
+
+<section class="card" aria-label="Hafta ve model seçimi" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center">
+<div style="display: flex; align-items: center; gap: 6px">
+<button type="button" class="icon-btn" aria-label="Önceki hafta" onClick="{{prevWeek}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button type="button" aria-label="Takvimden hafta seç" style="min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--text); font-family: inherit; cursor: pointer">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2"><span style="font-size: 11px; color: var(--faint)">{{week.wk}}</span><strong style="font-size: 15px; font-weight: 600">{{week.range}}</strong></span>
+</button>
+<button type="button" class="icon-btn" aria-label="Sonraki hafta" onClick="{{nextWeek}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+</div>
+<div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 4px; min-width: 260px">
+<label for="yr" class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Zaman çizelgesi, yıl</label>
+<div style="position: relative">
+<input id="yr" type="range" min="2012" max="2026" step="1" value="{{year}}" onChange="{{onYear}}">
+</div>
+<div aria-hidden="true" style="display: flex; justify-content: space-between; font-size: 11px; color: var(--faint)"><span>2012</span><span>2014</span><span>2016</span><span>2018</span><span>2020</span><span>2022</span><span>2024</span><span>2026</span></div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding-top: 14px; border-top: 1px solid var(--line)">
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<span style="font-size: 13px; color: var(--muted)">Örnekler</span>
+<sc-for list="{{examples}}" as="e" hint-placeholder-count="3"><button type="button" class="{{e.cls}}" aria-pressed="{{e.on}}" onClick="{{e.pick}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{e.label}}</button></sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-left: auto">
+<div style="display: flex; align-items: center; gap: 8px"><span id="mlab" style="font-size: 13px; color: var(--muted)">Model</span>
+<div class="seg" role="group" aria-labelledby="mlab"><sc-for list="{{models}}" as="m" hint-placeholder-count="3"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for></div></div>
+<div style="display: flex; align-items: center; gap: 8px"><span id="llab" style="font-size: 13px; color: var(--muted)">Liste</span>
+<div class="seg" role="group" aria-labelledby="llab"><sc-for list="{{lens}}" as="l" hint-placeholder-count="3"><button type="button" class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div>
+</div>
+</div>
+</section>
+
+<section aria-label="Hafta özeti" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">SPK manipülasyon dönemindeki hisse</p>
+<p style="display: flex; align-items: baseline; gap: 10px"><strong style="font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1; color: var(--green-ink)">{{hits}}</strong><span style="font-size: 20px; color: var(--muted)">/ {{len}}</span></p>
+<p style="font-size: 13px; color: var(--faint)">rastgele beklenti {{randExp}}</p>
+</div>
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">O hafta puanlanan hisse</p>
+<strong style="font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1">{{week.scored}}</strong>
+<p style="font-size: 13px; color: var(--faint)">ilk {{len}} = en şüpheli %{{pct}}</p>
+</div>
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">Seçili hafta</p>
+<strong style="font-size: 32px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15">{{week.range}}</strong>
+<p style="font-size: 13px; color: var(--faint)">{{modelName}} · yalnızca o güne kadarki veri</p>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+<section class="card" aria-labelledby="tbl-h" style="flex: 999 1 640px; min-width: 0; overflow: hidden">
+<div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+<h2 id="tbl-h" style="font-size: 16px; font-weight: 600">Haftalık şüphe listesi · ilk {{len}}</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted)">
+<span style="display: inline-flex; gap: 6px; align-items: center"><span class="badge b-green" style="padding: 2px 6px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg></span>SPK dönemi</span>
+<span style="display: inline-flex; gap: 6px; align-items: center"><span class="badge b-amber" style="padding: 2px 6px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5"></path></svg></span>2 yıl içinde karar</span>
+<span style="display: inline-flex; gap: 6px; align-items: center"><span class="badge b-gray" style="padding: 2px 6px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg></span>SPK kararı yok</span>
+</div>
+</div>
+<div style="overflow-x: auto">
+<table class="t">
+<caption class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Seçili haftada şüphe skoruna göre sıralanmış hisseler</caption>
+<thead><tr><th scope="col" style="width: 56px">Sıra</th><th scope="col">Hisse · Şirket</th><th scope="col" style="width: 170px">Şüphe skoru</th><th scope="col">Nedenler</th><th scope="col">Sonradan SPK</th></tr></thead>
+<tbody>
+<sc-for list="{{shown}}" as="r" hint-placeholder-count="20">
+<sc-if value="{{r.isCut}}" hint-placeholder-val="{{ false }}">
+<tr><td colspan="5" style="padding: 0; border-bottom: 0"><div style="display: flex; align-items: center; gap: 10px; padding: 6px 12px; color: var(--red-ink); font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 16H3z"></path><path d="M12 10v4"></path></svg>İlk 20 eşiği<span style="flex: 1; border-top: 2px dashed var(--red)"></span></div></td></tr>
+</sc-if>
+<sc-if value="{{r.isRow}}" hint-placeholder-val="{{ true }}">
+<tr class="{{r.rowCls}}">
+<td style="font-weight: 600; color: var(--muted)">{{r.rank}}</td>
+<td><button type="button" class="rowbtn" onClick="{{r.pick}}" aria-label="{{r.aria}}"><strong style="font-size: 14px; font-weight: 700">{{r.ticker}}</strong><span style="font-size: 12px; color: var(--muted)">{{r.company}}</span></button></td>
+<td><div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; height: 8px; border-radius: 4px; background: var(--surface-2)"><span style="display: block; height: 8px; border-radius: 4px; background: var(--teal); width: {{r.w}}"></span></span><span style="width: 24px; text-align: right; font-weight: 600">{{r.score}}</span></div></td>
+<td><div style="display: flex; flex-wrap: wrap; gap: 4px"><sc-for list="{{r.reasons}}" as="c" hint-placeholder-count="3"><span class="chip">{{c}}</span></sc-for></div></td>
+<td>
+<sc-if value="{{r.isG}}" hint-placeholder-val="{{ false }}"><span class="badge b-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>{{r.spk}}</span></sc-if>
+<sc-if value="{{r.isA}}" hint-placeholder-val="{{ false }}"><span class="badge b-amber"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{r.spk}}</span></sc-if>
+<sc-if value="{{r.isN}}" hint-placeholder-val="{{ true }}"><span class="badge b-gray" aria-label="SPK kararı yok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg>—</span></sc-if>
+</td>
+</tr>
+</sc-if>
+</sc-for>
+</tbody>
+</table>
+</div>
+<sc-if value="{{hasMore}}" hint-placeholder-val="{{ false }}"><p style="padding: 12px 16px; font-size: 13px; color: var(--muted)">… ve 26 hisse daha. Tam liste CSV olarak indirilebilir.</p></sc-if>
+</section>
+
+<aside class="card" aria-labelledby="pv-h" style="flex: 1 1 380px; min-width: 300px; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<p class="eyebrow">Önizleme</p>
+<h2 id="pv-h" style="font-size: 24px; font-weight: 700; letter-spacing: -.01em">{{sel.ticker}}</h2>
+<p style="font-size: 13px; color: var(--muted)">{{sel.company}}</p>
+</div>
+<span class="badge b-teal">Sıra {{sel.rank}} / {{week.scored}}</span>
+</div>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 8px">
+<figcaption style="font-size: 12px; color: var(--muted)">Son 6 ay · fiyat</figcaption>
+<svg viewBox="0 0 360 170" style="width: 100%; height: auto; display: block" role="img" aria-label="{{sel.chartAlt}}">
+<sc-if value="{{sel.band}}" hint-placeholder-val="{{ false }}"><rect x="{{sel.bx}}" y="6" width="{{sel.bw}}" height="152" fill="#f4a261" fill-opacity=".24"></rect></sc-if>
+<line x1="0" y1="158" x2="360" y2="158" stroke="var(--line)"></line>
+<line x1="280" y1="6" x2="280" y2="158" stroke="#e63946" stroke-width="2"></line>
+<polyline points="{{sel.pts}}" fill="none" stroke="var(--text)" stroke-width="2" stroke-linejoin="round"></polyline>
+<text x="284" y="18" font-size="11" font-weight="600" fill="var(--red-ink)" font-family="Inter, sans-serif">Seçili hafta</text>
+</svg>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--muted)">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 12px; height: 8px; background: #f4a261; opacity: .55; border-radius: 2px"></span>SPK'nın belirttiği dönem</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 2px; height: 10px; background: #e63946"></span>Seçili hafta</span>
+</div>
+</figure>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h3 style="font-size: 15px; font-weight: 600">Neden şüpheli?</h3>
+<sc-for list="{{sel.contrib}}" as="k" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: 130px 1fr 36px; gap: 10px; align-items: center; font-size: 13px">
+<span style="color: var(--muted)">{{k.label}}</span>
+<span style="height: 10px; border-radius: 3px; background: var(--surface-2)"><span style="display: block; height: 10px; border-radius: 3px; background: var(--teal); width: {{k.w}}"></span></span>
+<span style="text-align: right; font-weight: 600">{{k.v}}</span>
+</div>
+</sc-for>
+<ul style="margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.5; color: var(--text)">
+<sc-for list="{{sel.sentences}}" as="s" hint-placeholder-count="3"><li>{{s}}</li></sc-for>
+</ul>
+</div>
+<a href="Hisse-detayi.dc.html" class="btn primary" style="align-self: stretch">Hisse detayına git<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</aside>
+</div>
+
+<p style="display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>SPK bağlantısı olmayan hisse masum ya da suçlu anlamına gelmez.</p>
+</main>
+
+<footer style="border-top: 1px solid var(--line); background: var(--surface)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted)">
+<p style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Skorlar istatistiksel anomali sinyalidir, suçlama değildir. Yatırım tavsiyesi değildir.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<a href="https://github.com/" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.3a4.9 4.9 0 0 0-1.3-3.4 4.6 4.6 0 0 0-.1-3.4s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.3 5.4 2.6 5.4 2.6a4.6 4.6 0 0 0-.1 3.4A4.9 4.9 0 0 0 4 9.4c0 4.9 3 6 5.8 6.3a3 3 0 0 0-.8 2.3V22"></path></svg>GitHub</a>
+<span>Melih Erdem Koçoğlu · Yazılım Mühendisliği Bitirme Projesi 2026–2027</span>
+</div>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Tema"},"$preview":{"width":1440,"height":1960}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { week: "IZFAS", sel: "IZFAS", model: 0, len: 20, dark: null, lang: "TR", year: 2018 };
+  }
+  rng(seed) {
+    let r = seed;
+    return () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+  }
+  series(seed, ramp, crash) {
+    const rnd = this.rng(seed);
+    let y = 136; const pts = [];
+    for (let i = 0; i < 60; i++) {
+      const x = i * (360 / 59);
+      let d = (rnd() - 0.5) * 7;
+      if (i > 18 && i < 47) d -= ramp;
+      if (i > 48 && crash) d += crash;
+      y = Math.max(14, Math.min(152, y + d));
+      pts.push(x.toFixed(1) + "," + y.toFixed(1));
+    }
+    return pts.join(" ");
+  }
+  renderVals() {
+    const s = this.state;
+    const dark = s.dark === null ? (this.props.dark ?? false) : s.dark;
+    const weeks = {
+      IZFAS: { wk: "Hafta 22 · 2018", range: "02.06 – 08.06.2018", scored: 385, year: 2018, rank: 3, company: "İzmir Fırça Sanayi ve Ticaret A.Ş.", spk: "SPK dönemi · 27 gün sonra karar", score: 88 },
+      SANEL: { wk: "Hafta 20 · 2019", range: "13.05 – 19.05.2019", scored: 402, year: 2019, rank: 5, company: "SANEL Mühendislik Elektrik A.Ş.", spk: "SPK dönemi · [x] gün sonra karar", score: 81 },
+      KGYO: { wk: "Hafta 28 · 2022", range: "11.07 – 17.07.2022", scored: 517, year: 2022, rank: 2, company: "Koray Gayrimenkul Yatırım Ortaklığı A.Ş.", spk: "SPK dönemi · [x] gün sonra karar", score: 90 }
+    };
+    const order = ["IZFAS", "SANEL", "KGYO"];
+    const w = weeks[s.week];
+    const base = [
+      ["ABCDE", "Abcde Tekstil San. A.Ş.", 94, ["Hacim 7×", "10 günün 9'u yükseliş", "Haber yok"], "N"],
+      ["XYZTR", "Xyztr Enerji Yatırımları A.Ş.", 91, ["Hacim 5×", "Dar fiyat aralığı", "Haber yok"], "A"],
+      ["KLMNO", "Klmno Gayrimenkul Y.O.", 85, ["Tavan serisi 4 gün", "Hacim 4×"], "N"],
+      ["PQRST", "Pqrst Gıda Sanayi A.Ş.", 83, ["8 günün 7'si yükseliş", "Haber yok"], "N"],
+      ["DEFGH", "Defgh Madencilik A.Ş.", 79, ["Hacim 6×", "30 günde +%64"], "A"],
+      ["MNOPR", "Mnopr Plastik San. A.Ş.", 77, ["Düşük halka açıklık", "Hacim 3×"], "N"],
+      ["TUVYZ", "Tuvyz Holding A.Ş.", 75, ["Haber yok", "Hacim 4×"], "N"],
+      ["GHIJK", "Ghijk Kimya A.Ş.", 73, ["10 günün 8'i yükseliş"], "N"],
+      ["RSTUV", "Rstuv Turizm A.Ş.", 71, ["Hacim 5×", "Haber yok"], "N"],
+      ["BCDEF", "Bcdef Elektrik A.Ş.", 69, ["Dar fiyat aralığı", "Hacim 3×"], "N"],
+      ["LMNOP", "Lmnop Metal San. A.Ş.", 67, ["30 günde +%41"], "N"],
+      ["OPRST", "Oprst Cam Sanayi A.Ş.", 66, ["Hacim 4×", "Haber yok"], "N"],
+      ["EFGHI", "Efghi Kağıt A.Ş.", 64, ["9 günün 7'si yükseliş"], "N"],
+      ["HIJKL", "Hijkl Lojistik A.Ş.", 63, ["Hacim 3×", "Düşük halka açıklık"], "N"],
+      ["CDEFG", "Cdefg Seramik A.Ş.", 61, ["Haber yok"], "N"],
+      ["NOPRS", "Noprs Tarım Ürünleri A.Ş.", 60, ["Hacim 3×"], "N"],
+      ["FGHIJ", "Fghij Mobilya A.Ş.", 59, ["Tavan serisi 3 gün"], "N"],
+      ["IJKLM", "Ijklm Yazılım A.Ş.", 57, ["30 günde +%35", "Haber yok"], "N"],
+      ["STUVY", "Stuvy Ambalaj A.Ş.", 56, ["Hacim 3×"], "N"],
+      ["VYZAB", "Vyzab Sigorta A.Ş.", 55, ["Dar fiyat aralığı"], "N"],
+      ["ABXYZ", "Abxyz Otomotiv A.Ş.", 54, ["Hacim 3×"], "N"],
+      ["KLXYZ", "Klxyz İnşaat A.Ş.", 53, ["Haber yok"], "N"],
+      ["MNXYZ", "Mnxyz Enerji A.Ş.", 52, ["8 günün 6'sı yükseliş"], "N"],
+      ["PRXYZ", "Prxyz Liman A.Ş.", 51, ["Hacim 2×"], "N"]
+    ];
+    const caseRow = [s.week, w.company, w.score, ["Hacim 7×", "10 günün 9'u yükseliş", "Haber yok"], "G"];
+    const list = base.slice(0, w.rank - 1).concat([caseRow]).concat(base.slice(w.rank - 1, 23));
+    const sentenceOf = {
+      "Hacim 7×": "İşlem hacmi son 3 ayın ortalamasının 7 katına çıktı.",
+      "Hacim 5×": "İşlem hacmi son 3 ayın ortalamasının 5 katına çıktı.",
+      "Hacim 6×": "İşlem hacmi son 3 ayın ortalamasının 6 katına çıktı.",
+      "Hacim 4×": "İşlem hacmi olağan seviyesinin 4 katında.",
+      "Hacim 3×": "İşlem hacmi olağan seviyesinin 3 katında.",
+      "10 günün 9'u yükseliş": "Son 10 işlem gününün 9'unda fiyat yükseldi.",
+      "Haber yok": "Bu yükselişi açıklayacak bir KAP haberi yok.",
+      "Dar fiyat aralığı": "Gün içi fiyat aralığı olağandışı derecede dar.",
+      "Tavan serisi 4 gün": "Fiyat art arda 4 gün tavan yaptı."
+    };
+    const labels = ["Hacim artışı", "Kesintisiz yükseliş", "Habersiz hareket", "Fiyat ivmesi", "Düşük likidite"];
+    const rows = list.map((r, i) => {
+      const rnd = this.rng(i * 37 + 11);
+      const vals = r[4] === "G" ? [0.92, 0.85, 0.71, 0.48] : labels.slice(0, 4).map(() => 0.25 + rnd() * 0.65).sort((a, b) => b - a);
+      const isCase = r[4] === "G";
+      return {
+        isRow: true, isCut: false,
+        rank: i + 1, ticker: r[0], company: r[1], score: r[2], w: r[2] + "%",
+        reasons: r[3].slice(0, 3),
+        isG: r[4] === "G", isA: r[4] === "A", isN: r[4] === "N",
+        spk: r[4] === "G" ? w.spk : (r[4] === "A" ? "2 yıl içinde SPK kararı" : "—"),
+        rowCls: s.sel === r[0] ? "sel" : "",
+        aria: r[0] + " önizlemesini aç, sıra " + (i + 1),
+        pick: () => this.setState({ sel: r[0] }),
+        pts: this.series(i * 13 + 7, isCase ? 3.3 : 1.2 + rnd() * 1.6, isCase ? 7 : (r[4] === "A" ? 2.5 : 0)),
+        band: isCase, bx: 50, bw: 230,
+        chartAlt: r[0] + " son 6 ay fiyat grafiği; seçili haftaya kadar yükseliş" + (isCase ? ", turuncu bant SPK'nın belirttiği manipülasyon dönemi, sonrasında sert düşüş" : ""),
+        contrib: labels.slice(0, 4).map((l, j) => ({ label: l, w: Math.round(vals[j] * 100) + "%", v: vals[j].toFixed(2).replace(".", ",") })),
+        sentences: r[3].map((c) => sentenceOf[c] || (c + ".")).slice(0, 3)
+      };
+    });
+    const len = s.len;
+    let shown = rows.slice(0, Math.min(len, 20));
+    if (len === 50) shown = shown.concat([{ isCut: true, isRow: false, reasons: [], contrib: [], sentences: [] }]).concat(rows.slice(20, 24));
+    const sel = rows.find((r) => r.ticker === s.sel) || rows[w.rank - 1];
+    const hits = rows.slice(0, len).filter((r) => r.isG).length;
+    const randExp = (len * 0.005).toFixed(2).replace(".", ",").replace(/0$/, "");
+    const modelNames = ["Kural + PU (önerilen)", "Kurallar", "PU öğrenme"];
+    return {
+      rootClass: dark ? "app dark" : "app",
+      dark: dark, light: !dark,
+      themeLabel: dark ? "Açık temaya geç" : "Koyu temaya geç",
+      toggleDark: () => this.setState({ dark: !dark }),
+      isTR: s.lang === "TR", isEN: s.lang === "EN",
+      trCls: s.lang === "TR" ? "on" : "", enCls: s.lang === "EN" ? "on" : "",
+      setTR: () => this.setState({ lang: "TR" }), setEN: () => this.setState({ lang: "EN" }),
+      week: w, year: s.year,
+      onYear: (e) => this.setState({ year: Number(e.target.value) }),
+      prevWeek: () => { const k = order[(order.indexOf(s.week) + 2) % 3]; this.setState({ week: k, sel: k, year: weeks[k].year }); },
+      nextWeek: () => { const k = order[(order.indexOf(s.week) + 1) % 3]; this.setState({ week: k, sel: k, year: weeks[k].year }); },
+      examples: [["IZFAS", "IZFAS · Haz 2018"], ["SANEL", "SANEL · May 2019"], ["KGYO", "KGYO · Tem 2022"]].map(([k, label]) => ({
+        label, on: s.week === k, cls: s.week === k ? "ex on" : "ex",
+        pick: () => this.setState({ week: k, sel: k, year: weeks[k].year })
+      })),
+      models: modelNames.map((label, i) => ({ label, on: s.model === i, cls: s.model === i ? "on" : "", pick: () => this.setState({ model: i }) })),
+      modelName: modelNames[s.model],
+      lens: [10, 20, 50].map((n) => ({ label: String(n), on: s.len === n, cls: s.len === n ? "on" : "", pick: () => this.setState({ len: n }) })),
+      len, hits, randExp,
+      pct: (len / w.scored * 100).toFixed(1).replace(".", ","),
+      shown, hasMore: len === 50,
+      sel
+    };
+  }
+}
+</script>
+</body>
+</html>

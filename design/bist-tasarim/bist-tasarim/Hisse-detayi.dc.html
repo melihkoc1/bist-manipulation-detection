@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Hisse detayı · IZFAS — BIST Manipülasyon Tespiti</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.app{--bg:#f5f6f3;--surface:#ffffff;--surface-2:#eef1ef;--line:#dde2df;--line-2:#c5ccc9;--text:#13212b;--muted:#4f5c66;--faint:#66727b;--teal:#2a9d8f;--teal-ink:#1b6f65;--teal-soft:#e2f1ee;--btn:#1b6f65;--btn-fg:#ffffff;--orange:#f4a261;--orange-soft:#fdeddc;--orange-ink:#8a4a10;--red:#e63946;--red-ink:#b0121e;--red-soft:#fce7e9;--green:#2f9e44;--green-ink:#1d6b2e;--green-soft:#e3f2e6;--amber-ink:#7a5000;--amber-soft:#fbefd2;--gray-soft:#eceeed;--gray-ink:#4b555c;--rand:#a3abb0;--grid:#e6eae8;--vol:#9fb3bf;font-family:Inter,"IBM Plex Sans",system-ui,sans-serif;font-feature-settings:"tnum" 1;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+.app.dark{--bg:#0c141e;--surface:#121c28;--surface-2:#172433;--line:#223244;--line-2:#31465c;--text:#e4ebf1;--muted:#a2b0bd;--faint:#8a99a7;--teal-ink:#5cc6b8;--teal-soft:#123433;--btn:#2a9d8f;--btn-fg:#06121a;--orange-soft:#3a2816;--orange-ink:#f7b98a;--red-ink:#ff7d86;--red-soft:#3b1820;--green:#3fb55a;--green-ink:#77d590;--green-soft:#14301e;--amber-ink:#f1c869;--amber-soft:#332a10;--gray-soft:#1d2a38;--gray-ink:#b0bcc7;--rand:#5f6e7c;--grid:#1c2a39;--vol:#4a6274}
+.app *{box-sizing:border-box}
+.app h1,.app h2,.app h3,.app p{margin:0}
+.app a{color:var(--teal-ink)}
+.app a:hover{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);text-decoration:none}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{color:var(--text);background:var(--teal-soft);box-shadow:inset 0 -2px 0 var(--teal)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;text-decoration:none;border:1px solid var(--line-2);background:var(--surface);color:var(--text);cursor:pointer}
+.app a.btn{color:var(--text)}
+.seg{display:inline-flex;flex-wrap:wrap;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);gap:2px}
+.seg button{min-height:36px;padding:0 12px;border:0;border-radius:7px;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.icon-btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-green{background:var(--green-soft);color:var(--green-ink)}
+.b-amber{background:var(--amber-soft);color:var(--amber-ink)}
+.b-gray{background:var(--gray-soft);color:var(--gray-ink)}
+.b-red{background:var(--red-soft);color:var(--red-ink)}
+.b-teal{background:var(--teal-soft);color:var(--teal-ink)}
+.b-orange{background:var(--orange-soft);color:var(--orange-ink)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.field{min-height:44px;padding:0 12px 0 38px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;width:100%}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid var(--line)}
+.fchip{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.fchip.on{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-ink)}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height: 100%; display: flex; flex-direction: column">
+<header style="background: var(--surface); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 12px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text)">
+<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1b6f65"></rect><path d="M6 20 L11 20 L14 11 L18 23 L21 15 L26 15" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="26" cy="15" r="2.2" fill="#f4a261"></circle></svg>
+<span style="font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--text)">BIST Manipülasyon Tespiti</span>
+</a>
+<nav aria-label="Ana menü" class="nav" style="display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 640px">
+<a href="Main.dc.html">Genel bakış</a>
+<a href="Zaman-makinesi.dc.html">Zaman makinesi</a>
+<a href="Hisse-detayi.dc.html" class="on" aria-current="page">Hisse detayı</a>
+<a href="Vaka-calismalari.dc.html">Vaka çalışmaları</a>
+<a href="Sonuclar.dc.html">Sonuçlar</a>
+<a href="Canli-test.dc.html">Canlı test</a>
+<a href="Yontem.dc.html">Yöntem</a>
+<a href="Hakkinda.dc.html">Hakkında</a>
+</nav>
+<div style="display: flex; gap: 8px; align-items: center">
+<div class="seg" role="group" aria-label="Dil seçimi"><button type="button" class="on" aria-pressed="true">TR</button><button type="button" aria-pressed="false">EN</button></div>
+<button type="button" class="icon-btn" aria-label="{{themeLabel}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></button>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1360px; margin: 0 auto; padding: 32px clamp(16px, 3vw, 40px) 56px; display: flex; flex-direction: column; gap: 20px">
+
+<section style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<p class="eyebrow">Hisse detayı</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+<h1 style="font-size: 56px; line-height: 1; font-weight: 700; letter-spacing: -.03em">IZFAS</h1>
+<span class="badge b-orange" style="font-size: 13px; padding: 5px 11px"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 L11 11 L1 11Z" fill="currentColor"></path></svg>4 SPK kararı</span>
+</div>
+<p style="font-size: 16px; color: var(--muted)">İzmir Fırça Sanayi ve Ticaret A.Ş. · BIST</p>
+</div>
+<div style="flex: 0 1 360px; position: relative">
+<label for="q" style="display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px">Hisse ara</label>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 12px; bottom: 13px; color: var(--faint)"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input id="q" class="field" type="search" placeholder="Kod veya şirket adı, ör. SANEL">
+</div>
+</section>
+
+<section aria-label="Özet göstergeler" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">En iyi haftalık sıra</p>
+<p style="display: flex; align-items: baseline; gap: 10px"><strong style="font-size: 44px; font-weight: 600; letter-spacing: -.02em; line-height: 1">1</strong><span style="font-size: 14px; color: var(--muted)">/ 391 · 23.06.2018 haftası</span></p>
+<p style="font-size: 13px; color: var(--faint)">rastgele beklenen medyan sıra ~195</p>
+</div>
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">İlk 20'de geçen hafta (2018)</p>
+<p style="display: flex; align-items: baseline; gap: 10px"><strong style="font-size: 44px; font-weight: 600; letter-spacing: -.02em; line-height: 1">11</strong><span style="font-size: 14px; color: var(--muted)">hafta</span></p>
+<p style="font-size: 13px; color: var(--faint)">rastgele beklenti 2,7 hafta</p>
+</div>
+<div class="card" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+<p style="font-size: 13px; font-weight: 500; color: var(--muted)">SPK kararı</p>
+<p style="display: flex; align-items: baseline; gap: 10px"><strong style="font-size: 44px; font-weight: 600; letter-spacing: -.02em; line-height: 1">4</strong><span style="font-size: 14px; color: var(--muted)">karar · 2018–2019</span></p>
+<p style="font-size: 13px; color: var(--faint)">ilk alarm, ilk karardan 33 gün önce</p>
+</div>
+</section>
+
+<section class="card" aria-labelledby="ch-h" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<h2 id="ch-h" style="font-size: 16px; font-weight: 600">Fiyat, hacim ve haftalık sıra</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div class="seg" role="group" aria-label="Tarih aralığı"><button type="button">6A</button><button type="button">1Y</button><button type="button" class="on" aria-pressed="true">2Y</button><button type="button">Tümü</button></div>
+<button type="button" class="btn" style="min-height: 40px; font-size: 13px; padding: 0 12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>01.01.2018 – 31.12.2019</button>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--muted)">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; background: #f4a261; opacity: .55; border-radius: 2px"></span>SPK'nın belirttiği manipülasyon dönemi</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0 L10 10 L0 10Z" fill="currentColor"></path></svg>SPK kararı</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 2px; height: 12px; background: #e63946"></span>İlk alarm / seçili hafta</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 16px; border-top: 2px dashed #e63946"></span>İlk 20 eşiği</span>
+</div>
+<svg viewBox="0 0 1200 620" style="width: 100%; height: auto; display: block" role="img" aria-label="IZFAS 2018–2019: fiyat Nisan–Temmuz 2018 arasında yaklaşık 5 TL'den 30 TL'ye çıktı, SPK'nın belirttiği dönem turuncu bantla gösterildi. Sistem 2 Haziran 2018 haftasında ilk alarmı verdi. Temmuz 2018 SPK tedbirinden sonra fiyat yüzde 87 düştü. Hacim yükseliş döneminde arttı; haftalık sıra 11 hafta ilk 20 içinde kaldı.">
+<text x="8" y="16" font-size="12" font-weight="600" fill="var(--muted)" font-family="Inter, sans-serif">Fiyat (TL)</text>
+<rect x="225" y="24" width="114" height="566" fill="#f4a261" fill-opacity=".2"></rect>
+<sc-for list="{{priceTicks}}" as="t" hint-placeholder-count="4"><line x1="60" x2="1160" y1="{{t.y}}" y2="{{t.y}}" stroke="var(--grid)"></line><text x="52" y="{{t.ty}}" font-size="11" text-anchor="end" fill="var(--faint)" font-family="Inter, sans-serif">{{t.l}}</text></sc-for>
+<polyline points="{{pricePts}}" fill="none" stroke="var(--text)" stroke-width="2" stroke-linejoin="round"></polyline>
+<sc-for list="{{decisions}}" as="d" hint-placeholder-count="4"><path d="{{d.path}}" fill="var(--text)"><title>{{d.title}}</title></path></sc-for>
+<g>
+<path d="M343 278 L349 284 L337 284 Z" fill="var(--line-2)"></path>
+<rect x="356" y="280" width="250" height="44" rx="6" fill="var(--surface)" stroke="var(--line-2)"></rect>
+<text x="368" y="298" font-size="12" font-weight="600" fill="var(--text)" font-family="Inter, sans-serif">Tedbir · Temmuz 2018</text>
+<text x="368" y="315" font-size="11" fill="var(--muted)" font-family="Inter, sans-serif">Bülten 2018/[no] · ilk alarmdan 33 gün sonra</text>
+</g>
+<text x="8" y="316" font-size="12" font-weight="600" fill="var(--muted)" font-family="Inter, sans-serif">Hacim</text>
+<line x1="60" x2="1160" y1="410" y2="410" stroke="var(--line)"></line>
+<sc-for list="{{vol}}" as="v" hint-placeholder-count="104"><rect x="{{v.x}}" y="{{v.y}}" width="7" height="{{v.h}}" fill="var(--vol)"></rect></sc-for>
+<text x="8" y="446" font-size="12" font-weight="600" fill="var(--muted)" font-family="Inter, sans-serif">Haftalık sıra</text>
+<line x1="60" x2="1160" y1="456" y2="456" stroke="var(--grid)"></line>
+<text x="52" y="460" font-size="11" text-anchor="end" fill="var(--faint)" font-family="Inter, sans-serif">1</text>
+<line x1="60" x2="1160" y1="478" y2="478" stroke="#e63946" stroke-width="1.5" stroke-dasharray="6 5"></line>
+<text x="52" y="482" font-size="11" text-anchor="end" fill="var(--red-ink)" font-weight="600" font-family="Inter, sans-serif">20</text>
+<text x="1166" y="482" font-size="11" fill="var(--red-ink)" font-weight="600" font-family="Inter, sans-serif">ilk 20</text>
+<line x1="60" x2="1160" y1="530" y2="530" stroke="var(--grid)"></line>
+<text x="52" y="534" font-size="11" text-anchor="end" fill="var(--faint)" font-family="Inter, sans-serif">100</text>
+<line x1="60" x2="1160" y1="590" y2="590" stroke="var(--line)"></line>
+<text x="52" y="594" font-size="11" text-anchor="end" fill="var(--faint)" font-family="Inter, sans-serif">200+</text>
+<polyline points="{{rankPts}}" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round"></polyline>
+<line x1="290" y1="24" x2="290" y2="590" stroke="#e63946" stroke-width="2"></line>
+<rect x="232" y="290" width="116" height="20" rx="4" fill="#e63946"></rect>
+<text x="290" y="304" font-size="11" font-weight="600" text-anchor="middle" fill="#ffffff" font-family="Inter, sans-serif">İlk alarm · 45. gün</text>
+<sc-for list="{{months}}" as="m" hint-placeholder-count="8"><text x="{{m.x}}" y="612" font-size="11" text-anchor="middle" fill="var(--faint)" font-family="Inter, sans-serif">{{m.l}}</text></sc-for>
+</svg>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px">
+<section class="card" aria-labelledby="why-h" style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
+<h2 id="why-h" style="font-size: 16px; font-weight: 600">Neden şüpheli?</h2>
+<span style="font-size: 13px; color: var(--muted)">02.06 – 08.06.2018 · sıra 3 / 385</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{contrib}}" as="k" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 150px 1fr 40px; gap: 12px; align-items: center; font-size: 13px">
+<span style="color: var(--muted)">{{k.label}}</span>
+<span style="height: 12px; border-radius: 3px; background: var(--surface-2)"><span style="display: block; height: 12px; border-radius: 3px; background: var(--teal); width: {{k.w}}"></span></span>
+<span style="text-align: right; font-weight: 600">{{k.v}}</span>
+</div>
+</sc-for>
+</div>
+<ul style="margin: 0; padding: 14px 16px 14px 34px; border-radius: 10px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5">
+<li>İşlem hacmi son 3 ayın ortalamasının 7 katına çıktı.</li>
+<li>Son 10 işlem gününün 9'unda fiyat yükseldi; toplam artış %58.</li>
+<li>Bu yükselişi açıklayacak bir KAP haberi yok; şirketin tek açıklaması "fiyat hareketi" bildirimi.</li>
+<li>Halka açık pay küçük; az sayıda işlemle fiyat oynatılabilir.</li>
+</ul>
+<p style="font-size: 12px; color: var(--faint)">Katkılar modelin skorunu hangi göstergelerin yukarı çektiğini gösterir; bir suçlama değildir.</p>
+</section>
+
+<section class="card" aria-labelledby="spk-h" style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<h2 id="spk-h" style="font-size: 16px; font-weight: 600">SPK kararları</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{timeline}}" as="e" hint-placeholder-count="4">
+<li style="display: grid; grid-template-columns: 20px 1fr; gap: 14px">
+<div style="display: flex; flex-direction: column; align-items: center"><span style="width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--text); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--text)"></span><span style="flex: 1; width: 2px; background: var(--line)"></span></div>
+<div style="padding-bottom: 18px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><strong style="font-size: 14px">{{e.date}}</strong><span class="badge b-gray">{{e.type}}</span></div>
+<p style="font-size: 13px; color: var(--muted)">{{e.desc}}</p>
+<p style="font-size: 12px; color: var(--faint)">{{e.meta}}</p>
+</div>
+</li>
+</sc-for>
+</ol>
+</section>
+</div>
+
+<section class="card" aria-labelledby="kap-h" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<h2 id="kap-h" style="font-size: 16px; font-weight: 600">KAP bildirimleri <span style="font-weight: 500; color: var(--muted)">· 38</span></h2>
+<div style="position: relative; flex: 0 1 320px">
+<label for="kq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Bildirimlerde ara</label>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 13px; top: 14px; color: var(--faint)"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input id="kq" class="field" type="search" placeholder="Bildirimlerde ara">
+</div>
+</div>
+<div role="group" aria-label="Kategori filtresi" style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" class="fchip on" aria-pressed="true">Tümü</button>
+<button type="button" class="fchip" aria-pressed="false">Gerçek haber</button>
+<button type="button" class="fchip" aria-pressed="false">Fiyat hareketi açıklaması</button>
+<button type="button" class="fchip" aria-pressed="false">Söylenti</button>
+<button type="button" class="fchip" aria-pressed="false">Diğer</button>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{kap}}" as="n" hint-placeholder-count="6">
+<li style="display: grid; grid-template-columns: 110px 1fr auto; gap: 16px; align-items: center; padding: 12px 4px; border-top: 1px solid var(--line); font-size: 14px">
+<span style="color: var(--muted)">{{n.date}}</span>
+<a href="https://www.kap.org.tr/" style="color: var(--text); text-decoration: none; font-weight: 500">{{n.title}}</a>
+<span class="{{n.cls}}">{{n.tag}}</span>
+</li>
+</sc-for>
+</ul>
+<button type="button" class="btn" style="align-self: flex-start; min-height: 40px; font-size: 14px">32 bildirim daha göster</button>
+</section>
+
+</main>
+
+<footer style="border-top: 1px solid var(--line); background: var(--surface)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted)">
+<p style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Skorlar istatistiksel anomali sinyalidir, suçlama değildir. Yatırım tavsiyesi değildir.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<a href="https://github.com/" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.3a4.9 4.9 0 0 0-1.3-3.4 4.6 4.6 0 0 0-.1-3.4s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.3 5.4 2.6 5.4 2.6a4.6 4.6 0 0 0-.1 3.4A4.9 4.9 0 0 0 4 9.4c0 4.9 3 6 5.8 6.3a3 3 0 0 0-.8 2.3V22"></path></svg>GitHub</a>
+<span>Melih Erdem Koçoğlu · Yazılım Mühendisliği Bitirme Projesi 2026–2027</span>
+</div>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Tema"},"$preview":{"width":1440,"height":2360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const X = (m) => 60 + m * 45.83;
+    const Y = (p) => 250 - p * 7;
+    let r = 17;
+    const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    const price = []; const vol = []; const rank = [];
+    for (let w = 0; w < 104; w++) {
+      const m = w * 24 / 104;
+      let p;
+      if (m < 3.6) p = 5 + (rnd() - 0.5) * 0.6;
+      else if (m < 6.1) p = 5 + Math.pow((m - 3.6) / 2.5, 1.6) * 25 + (rnd() - 0.5) * 1.2;
+      else if (m < 7.6) p = 30 - (m - 6.1) / 1.5 * 26 + (rnd() - 0.5) * 1.2;
+      else p = 3.8 + (rnd() - 0.5) * 0.6;
+      price.push(X(m).toFixed(1) + "," + Y(Math.max(1, p)).toFixed(1));
+      let v = 6 + rnd() * 8;
+      if (m >= 3.6 && m < 6.4) v = 24 + rnd() * 52;
+      if (m >= 6.4 && m < 7.6) v = 30 + rnd() * 25;
+      vol.push({ x: (X(m) - 3).toFixed(1), y: (410 - v).toFixed(1), h: v.toFixed(1) });
+      let k;
+      if (m < 3.6) k = 140 + rnd() * 60;
+      else if (m < 4.8) k = 140 - (m - 3.6) / 1.2 * 125 + rnd() * 8;
+      else if (m < 6.6) k = 1 + rnd() * 17;
+      else if (m < 8) k = 30 + rnd() * 60;
+      else k = 120 + rnd() * 80;
+      const ky = k <= 20 ? 456 + (k - 1) / 19 * 22 : (k <= 100 ? 478 + (k - 20) / 80 * 52 : 530 + Math.min(60, (k - 100) / 100 * 60));
+      rank.push(X(m).toFixed(1) + "," + ky.toFixed(1));
+    }
+    const tri = (x) => "M" + x + " 262 L" + (x + 7) + " 276 L" + (x - 7) + " 276 Z";
+    const decisions = [
+      { m: 6.17, title: "Tedbir · Temmuz 2018" },
+      { m: 10.5, title: "Suç duyurusu · Kasım 2018" },
+      { m: 18.4, title: "İdari para cezası · Temmuz 2019" },
+      { m: 18.7, title: "İşlem yasağı · Temmuz 2019" }
+    ].map((d) => ({ path: tri(X(d.m).toFixed(1)), title: d.title }));
+    const mn = ["Oca 2018", "Nis", "Tem", "Eki", "Oca 2019", "Nis", "Tem", "Eki"];
+    return {
+      rootClass: dark ? "app dark" : "app",
+      themeLabel: dark ? "Açık temaya geç" : "Koyu temaya geç",
+      pricePts: price.join(" "), vol, rankPts: rank.join(" "), decisions,
+      priceTicks: [0, 10, 20, 30].map((v) => ({ y: Y(v), ty: Y(v) + 4, l: String(v) })),
+      months: mn.map((l, i) => ({ x: X(i * 3).toFixed(1), l })),
+      contrib: [["Hacim artışı", 0.92], ["Kesintisiz yükseliş", 0.85], ["Habersiz hareket", 0.71], ["Fiyat ivmesi", 0.48], ["Düşük halka açıklık", 0.33]].map(([label, v]) => ({ label, w: Math.round(v * 100) + "%", v: v.toFixed(2).replace(".", ",") })),
+      timeline: [
+        { date: "Temmuz 2018", type: "Tedbir", desc: "Pay üzerinde işlem tedbiri; SPK'nın belirttiği dönem: Nisan – Temmuz 2018.", meta: "SPK Bülteni 2018/[no] · ilk alarmdan 33 gün sonra" },
+        { date: "Kasım 2018", type: "Suç duyurusu", desc: "Piyasa dolandırıcılığı şüphesiyle suç duyurusu.", meta: "SPK Bülteni 2018/[no]" },
+        { date: "Temmuz 2019", type: "İdari para cezası", desc: "İlgili kişilere idari para cezası.", meta: "SPK Bülteni 2019/[no] · ilk alarmdan 13 ay sonra" },
+        { date: "Temmuz 2019", type: "İşlem yasağı", desc: "İlgili kişilere pay piyasasında işlem yasağı.", meta: "SPK Bülteni 2019/[no]" }
+      ],
+      kap: [
+        ["12.07.2018", "Fiyat ve miktar hareketlerine ilişkin açıklama", "Fiyat hareketi açıklaması", "tag b-gray"],
+        ["06.07.2018", "SPK tedbir kararına ilişkin bilgilendirme", "Diğer", "tag b-gray"],
+        ["21.06.2018", "Basında çıkan haberlere ilişkin açıklama", "Söylenti", "tag b-amber"],
+        ["08.06.2018", "Fiyat ve miktar hareketlerine ilişkin açıklama", "Fiyat hareketi açıklaması", "tag b-gray"],
+        ["30.03.2018", "2017 yılı finansal raporu", "Gerçek haber", "tag b-teal"],
+        ["14.03.2018", "Olağan genel kurul toplantı ilanı", "Diğer", "tag b-gray"]
+      ].map(([date, title, tag, cls]) => ({ date, title, tag, cls }))
+    };
+  }
+}
+</script>
+</body>
+</html>

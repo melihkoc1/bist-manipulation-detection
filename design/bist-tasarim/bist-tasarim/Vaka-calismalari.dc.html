@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Vaka çalışmaları — BIST Manipülasyon Tespiti</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.app{--bg:#f5f6f3;--surface:#ffffff;--surface-2:#eef1ef;--line:#dde2df;--line-2:#c5ccc9;--text:#13212b;--muted:#4f5c66;--faint:#66727b;--teal:#2a9d8f;--teal-ink:#1b6f65;--teal-soft:#e2f1ee;--btn:#1b6f65;--btn-fg:#ffffff;--orange:#f4a261;--orange-soft:#fdeddc;--orange-ink:#8a4a10;--red:#e63946;--red-ink:#b0121e;--red-soft:#fce7e9;--green:#2f9e44;--green-ink:#1d6b2e;--green-soft:#e3f2e6;--amber-ink:#7a5000;--amber-soft:#fbefd2;--gray-soft:#eceeed;--gray-ink:#4b555c;--rand:#a3abb0;--grid:#e6eae8;font-family:Inter,"IBM Plex Sans",system-ui,sans-serif;font-feature-settings:"tnum" 1;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+.app.dark{--bg:#0c141e;--surface:#121c28;--surface-2:#172433;--line:#223244;--line-2:#31465c;--text:#e4ebf1;--muted:#a2b0bd;--faint:#8a99a7;--teal-ink:#5cc6b8;--teal-soft:#123433;--btn:#2a9d8f;--btn-fg:#06121a;--orange-soft:#3a2816;--orange-ink:#f7b98a;--red-ink:#ff7d86;--red-soft:#3b1820;--green:#3fb55a;--green-ink:#77d590;--green-soft:#14301e;--amber-ink:#f1c869;--amber-soft:#332a10;--gray-soft:#1d2a38;--gray-ink:#b0bcc7;--rand:#5f6e7c;--grid:#1c2a39}
+.app *{box-sizing:border-box}
+.app h1,.app h2,.app h3,.app p{margin:0}
+.app a{color:var(--teal-ink)}
+.app a:hover{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);text-decoration:none}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{color:var(--text);background:var(--teal-soft);box-shadow:inset 0 -2px 0 var(--teal)}
+.seg{display:inline-flex;flex-wrap:wrap;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);gap:2px}
+.seg button{min-height:36px;padding:0 14px;border:0;border-radius:7px;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.icon-btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-green{background:var(--green-soft);color:var(--green-ink)}
+.b-gray{background:var(--gray-soft);color:var(--gray-ink)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.casecard{display:flex;flex-direction:column;gap:14px;padding:20px;text-decoration:none;color:var(--text)}
+.app a.casecard{color:var(--text)}
+.app a.casecard:hover{border-color:var(--teal)}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height: 100%; display: flex; flex-direction: column">
+<header style="background: var(--surface); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 12px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text)">
+<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1b6f65"></rect><path d="M6 20 L11 20 L14 11 L18 23 L21 15 L26 15" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="26" cy="15" r="2.2" fill="#f4a261"></circle></svg>
+<span style="font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--text)">BIST Manipülasyon Tespiti</span>
+</a>
+<nav aria-label="Ana menü" class="nav" style="display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 640px">
+<a href="Main.dc.html">Genel bakış</a>
+<a href="Zaman-makinesi.dc.html">Zaman makinesi</a>
+<a href="Hisse-detayi.dc.html">Hisse detayı</a>
+<a href="Vaka-calismalari.dc.html" class="on" aria-current="page">Vaka çalışmaları</a>
+<a href="Sonuclar.dc.html">Sonuçlar</a>
+<a href="Canli-test.dc.html">Canlı test</a>
+<a href="Yontem.dc.html">Yöntem</a>
+<a href="Hakkinda.dc.html">Hakkında</a>
+</nav>
+<div style="display: flex; gap: 8px; align-items: center">
+<div class="seg" role="group" aria-label="Dil seçimi"><button type="button" class="on" aria-pressed="true">TR</button><button type="button" aria-pressed="false">EN</button></div>
+<button type="button" class="icon-btn" aria-label="Koyu temaya geç"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></button>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1360px; margin: 0 auto; padding: 40px clamp(16px, 3vw, 40px) 64px; display: flex; flex-direction: column; gap: 28px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 760px">
+<h1 style="font-size: 32px; font-weight: 700; letter-spacing: -.02em">Vaka çalışmaları</h1>
+<p style="font-size: 16px; line-height: 1.55; color: var(--muted)">SPK'nın karara bağladığı vakalardan seçilmiş örnekler. Sistemin neyi yakaladığını ve neyi kaçırdığını aynı açıklıkla gösteriyoruz.</p>
+</div>
+<div class="seg" role="group" aria-label="Vaka filtresi"><sc-for list="{{filters}}" as="f" hint-placeholder-count="3"><button type="button" class="{{f.cls}}" aria-pressed="{{f.on}}" onClick="{{f.pick}}">{{f.label}}</button></sc-for></div>
+</div>
+
+<p style="font-size: 14px; color: var(--muted); padding: 12px 16px; border-radius: 10px; background: var(--surface-2)">Tüm test vakalarında yakalama oranı <strong style="color: var(--text)">%67</strong> <span style="color: var(--faint)">(rastgele %23)</span>. Buradaki 5 vaka, iki sonucu da göstermek için seçildi; oranı temsil etmez.</p>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px">
+<sc-for list="{{cases}}" as="c" hint-placeholder-count="5">
+<a href="{{c.href}}" class="card casecard" aria-label="{{c.aria}}">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="font-size: 24px; font-weight: 700; letter-spacing: -.01em">{{c.ticker}}</h2>
+<p style="font-size: 13px; color: var(--muted)">{{c.period}}</p>
+</div>
+<sc-if value="{{c.caught}}" hint-placeholder-val="{{ true }}"><span class="badge b-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>Yakalandı</span></sc-if>
+<sc-if value="{{c.missed}}" hint-placeholder-val="{{ false }}"><span class="badge b-gray"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path></svg>Kaçırıldı</span></sc-if>
+</div>
+<svg viewBox="0 0 340 96" style="width: 100%; height: auto; display: block" role="img" aria-label="{{c.alt}}">
+<rect x="{{c.bx}}" y="4" width="{{c.bw}}" height="84" fill="#f4a261" fill-opacity=".22"></rect>
+<line x1="0" y1="88" x2="340" y2="88" stroke="var(--line)"></line>
+<sc-if value="{{c.caught}}" hint-placeholder-val="{{ true }}"><line x1="{{c.ax}}" y1="4" x2="{{c.ax}}" y2="88" stroke="#e63946" stroke-width="2"></line></sc-if>
+<polyline points="{{c.pts}}" fill="none" stroke="var(--text)" stroke-width="1.8" stroke-linejoin="round"></polyline>
+</svg>
+<p style="font-size: 14px; line-height: 1.5">{{c.text}}</p>
+<span style="font-size: 13px; font-weight: 600; color: var(--teal-ink); display: inline-flex; align-items: center; gap: 6px">Vakayı aç<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--muted)">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 10px; background: #f4a261; opacity: .55; border-radius: 2px"></span>SPK'nın belirttiği manipülasyon dönemi</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 2px; height: 12px; background: #e63946"></span>Sistemin ilk alarmı (ilk 20)</span>
+</div>
+</main>
+
+<footer style="border-top: 1px solid var(--line); background: var(--surface)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted)">
+<p style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Skorlar istatistiksel anomali sinyalidir, suçlama değildir. Yatırım tavsiyesi değildir.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<a href="https://github.com/" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.3a4.9 4.9 0 0 0-1.3-3.4 4.6 4.6 0 0 0-.1-3.4s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.3 5.4 2.6 5.4 2.6a4.6 4.6 0 0 0-.1 3.4A4.9 4.9 0 0 0 4 9.4c0 4.9 3 6 5.8 6.3a3 3 0 0 0-.8 2.3V22"></path></svg>GitHub</a>
+<span>Melih Erdem Koçoğlu · Yazılım Mühendisliği Bitirme Projesi 2026–2027</span>
+</div>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Tema"},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { f: "all" }; }
+  spark(seed, ramp, crash) {
+    let r = seed; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
+    let y = 74; const pts = [];
+    for (let i = 0; i < 48; i++) {
+      let d = (rnd() - 0.5) * 5;
+      if (i > 8 && i < 30) d -= ramp;
+      if (i > 31) d += crash;
+      y = Math.max(8, Math.min(84, y + d));
+      pts.push((i * 340 / 47).toFixed(1) + "," + y.toFixed(1));
+    }
+    return pts.join(" ");
+  }
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const all = [
+      { ticker: "IZFAS", period: "Nisan – Temmuz 2018", caught: true, text: "45. günde alarm; SPK tedbirinden sonra fiyat %87 düştü.", href: "Vaka-IZFAS.dc.html", seed: 7, ramp: 3.2, crash: 5, ax: 95 },
+      { ticker: "SANEL", period: "Mayıs 2019 dönemi", caught: true, text: "Habersiz yükseliş ve hacim patlaması birlikte görüldü; alarm fiyat zirvesinden önce geldi.", href: "Vaka-calismalari.dc.html", seed: 21, ramp: 2.4, crash: 3.5, ax: 120 },
+      { ticker: "KGYO", period: "Temmuz 2022 dönemi", caught: true, text: "Liste sırası 2'ye kadar çıktı; alarm SPK'nın ilk kararından aylar önce verildi.", href: "Vaka-calismalari.dc.html", seed: 33, ramp: 2.8, crash: 4, ax: 105 },
+      { ticker: "KONYA", period: "[dönem]", caught: false, text: "Yükseliş yavaş ve şirket haberleriyle iç içeydi; skor ilk 20 eşiğinin altında kaldı.", href: "Vaka-calismalari.dc.html", seed: 45, ramp: 1.4, crash: 1.2, ax: 0 },
+      { ticker: "KUYAS", period: "[dönem]", caught: false, text: "Hacim artışı sınırlıydı; kurallar tetiklenmedi, PU skoru orta düzeyde kaldı.", href: "Vaka-calismalari.dc.html", seed: 57, ramp: 1.1, crash: 2, ax: 0 }
+    ];
+    const f = this.state.f;
+    const cases = all.filter((c) => f === "all" || (f === "c" ? c.caught : !c.caught)).map((c) => ({
+      ...c, missed: !c.caught, bx: 60, bw: 150,
+      pts: this.spark(c.seed, c.ramp, c.crash),
+      aria: c.ticker + " vakası, " + (c.caught ? "yakalandı" : "kaçırıldı") + ": " + c.text,
+      alt: c.ticker + " fiyat grafiği; turuncu bant SPK'nın belirttiği dönem" + (c.caught ? ", kırmızı çizgi sistemin ilk alarmı" : ", sistem alarm vermedi")
+    }));
+    return {
+      rootClass: dark ? "app dark" : "app",
+      cases,
+      filters: [["all", "Tümü · 5"], ["c", "Yakalanan · 3"], ["m", "Kaçırılan · 2"]].map(([k, label]) => ({ label, on: f === k, cls: f === k ? "on" : "", pick: () => this.setState({ f: k }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

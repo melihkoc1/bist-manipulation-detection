@@ -174,24 +174,29 @@ python -m pytest
 
 `compare_v2.py` içindeki bazı eşleştirilmiş karşılaştırmalar daha önceki skor anlık görüntülerini kullanır (`scores_v2_before`, `scores_v2_novwap`). Bu klasörler yoksa o karşılaştırmalar atlanır.
 
-## Tanıtım uygulaması
+## Tanıtım sitesi
 
-Projeyi göstermek için yerel bir Streamlit uygulaması (Türkçe / İngilizce). Çalışması için aşağıdaki
-veri hattının çalıştırılmış olması gerekir.
+Projeyi göstermek için yerel bir web sitesi (React + TypeScript + Vite; Türkçe / İngilizce, açık / koyu
+tema, mobil uyumlu). Çalışması için yukarıdaki veri hattının çalıştırılmış olması gerekir; site verisini
+`scripts/export_web.py` üretir (`web/public/data/`, depoya girmez).
 
 ```bash
-.venv/Scripts/python -m pip install -e ".[app]"
-.venv/Scripts/python -m streamlit run app/streamlit_app.py      # http://localhost:8501 açılır
+.venv/Scripts/python scripts/export_web.py      # ~2 dk, ~115 MB JSON
+cd web && npm install && npm run dev            # http://localhost:5173 açılır
 ```
 
 | Sayfa | Ne gösteriyor? |
 |---|---|
-| **Zaman makinesi** | 2012–2026 arasından herhangi bir hafta seçilir. Sistemin o hafta, sonradan öğrenilen hiçbir bilgiyi kullanmadan üreteceği ilk 20 listesi gösterilir. Listedeki hisselerden hangilerinin sonradan SPK vakası olduğu işaretlenir. |
-| **Hisse detayı** | Bir hissenin fiyatı, hacmi ve haftalık sırası. SPK'nın belirttiği manipülasyon dönemleri ve SPK kararları grafikte işaretlidir; hissenin KAP bildirimleri listelenir. |
-| **Sonuçlar** | Rastgeleye göre başarı, SPK'ya göre zaman kazancı, tez soruları ve vaka çalışmaları. |
-| **Yöntem** | Sistemin nasıl çalıştığı. |
+| **Genel bakış** | Ana sonuçlar (her biri rastgele tabanla), "rastgeleden 3 kat iyi ne demek?" görseli, öne çıkan vaka. |
+| **Zaman makinesi** | 2012–2026 arasından herhangi bir hafta ve model seçilir. Sistemin o hafta, sonradan öğrenilen hiçbir bilgiyi kullanmadan ürettiği ilk 10/20/50 listesi, her hisse için tetiklenen kurallar ve sonradan SPK kararı olup olmadığı gösterilir. |
+| **Hisse detayı** | Fiyat, hacim ve haftalık sıra (3 panel); SPK dönemleri, SPK kararları ve ilk alarm işaretli. Seçilen hafta için "Neden şüpheli?", SPK karar zaman çizelgesi ve KAP bildirimleri. |
+| **Vaka çalışmaları** | 3 yakalanan, 2 kaçırılan vaka; olay sırası ve dersler. |
+| **Sonuçlar** | Dönem seçici, model karşılaştırması, SPK'ya göre zaman, tez soruları ve deneme günlüğü. |
+| **Canlı test · Yöntem · Hakkında** | İleriye dönük test planı, yöntem ve etik ilkeler, proje bilgisi. |
 
-Uygulama yalnızca yerel veriyi okur ve yalnızca `localhost` üzerinden erişilebilir.
+Site yalnızca `localhost` üzerinden açılır; gerçek haftalık listeler internete yayımlanmaz. Tasarım
+dosyaları `design/` klasöründedir. Önceki Streamlit uygulaması (`app/`) da hâlâ çalışır:
+`.venv/Scripts/python -m streamlit run app/streamlit_app.py`.
 
 ## Depo yapısı
 
@@ -203,7 +208,9 @@ src/bistmd/
   models/     kurallar, Isolation Forest, LightGBM, PU öğrenme
   eval/       haftalık sıralama ölçütleri, rastgele taban, bootstrap
 scripts/      çalıştırma betikleri (puanlama, birleşim, değerlendirme, vaka çalışmaları)
-app/          Streamlit tanıtım uygulaması (zaman makinesi, hisse detayı, sonuçlar, yöntem)
+web/          tanıtım sitesi (React + TypeScript), veri: scripts/export_web.py
+app/          önceki Streamlit tanıtım uygulaması
+design/       tanıtım sitesinin onaylanmış tasarım dosyaları
 tests/        68 birim testi (veri gerektirmez), özellikler için geleceği görme testleri dahil
 docs/         sonuçlar, yorum, doğrulama, vaka çalışmaları
 ```

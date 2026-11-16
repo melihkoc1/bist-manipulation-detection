@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Hakkında — BIST Manipülasyon Tespiti</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.app{--bg:#f5f6f3;--surface:#ffffff;--surface-2:#eef1ef;--line:#dde2df;--line-2:#c5ccc9;--text:#13212b;--muted:#4f5c66;--faint:#66727b;--teal:#2a9d8f;--teal-ink:#1b6f65;--teal-soft:#e2f1ee;--btn:#1b6f65;--btn-fg:#ffffff;--orange:#f4a261;--orange-soft:#fdeddc;--orange-ink:#8a4a10;--red:#e63946;--red-ink:#b0121e;--gray-soft:#eceeed;--gray-ink:#4b555c;font-family:Inter,"IBM Plex Sans",system-ui,sans-serif;font-feature-settings:"tnum" 1;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+.app.dark{--bg:#0c141e;--surface:#121c28;--surface-2:#172433;--line:#223244;--line-2:#31465c;--text:#e4ebf1;--muted:#a2b0bd;--faint:#8a99a7;--teal-ink:#5cc6b8;--teal-soft:#123433;--btn:#2a9d8f;--btn-fg:#06121a;--gray-soft:#1d2a38;--gray-ink:#b0bcc7}
+.app *{box-sizing:border-box}
+.app h1,.app h2,.app h3,.app p{margin:0}
+.app a{color:var(--teal-ink)}
+.app a:hover{color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.nav a{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);text-decoration:none}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{color:var(--text);background:var(--teal-soft);box-shadow:inset 0 -2px 0 var(--teal)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;text-decoration:none;border:1px solid var(--line-2);background:var(--surface);color:var(--text);cursor:pointer}
+.app a.btn{color:var(--text)}
+.btn.primary,.app a.btn.primary{background:var(--btn);border-color:var(--btn);color:var(--btn-fg)}
+.seg{display:inline-flex;flex-wrap:wrap;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);gap:2px}
+.seg button{min-height:36px;padding:0 12px;border:0;border-radius:7px;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-2)}
+.icon-btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:10px 16px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500}
+.pill{padding:4px 10px;border-radius:6px;font-size:13px;font-weight:500;background:var(--surface-2);border:1px solid var(--line)}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="min-height: 100%; display: flex; flex-direction: column">
+<header style="background: var(--surface); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 12px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text)">
+<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1b6f65"></rect><path d="M6 20 L11 20 L14 11 L18 23 L21 15 L26 15" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="26" cy="15" r="2.2" fill="#f4a261"></circle></svg>
+<span style="font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: var(--text)">BIST Manipülasyon Tespiti</span>
+</a>
+<nav aria-label="Ana menü" class="nav" style="display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 640px">
+<a href="Main.dc.html">Genel bakış</a>
+<a href="Zaman-makinesi.dc.html">Zaman makinesi</a>
+<a href="Hisse-detayi.dc.html">Hisse detayı</a>
+<a href="Vaka-calismalari.dc.html">Vaka çalışmaları</a>
+<a href="Sonuclar.dc.html">Sonuçlar</a>
+<a href="Canli-test.dc.html">Canlı test</a>
+<a href="Yontem.dc.html">Yöntem</a>
+<a href="Hakkinda.dc.html" class="on" aria-current="page">Hakkında</a>
+</nav>
+<div style="display: flex; gap: 8px; align-items: center">
+<div class="seg" role="group" aria-label="Dil seçimi"><button type="button" class="on" aria-pressed="true">TR</button><button type="button" aria-pressed="false">EN</button></div>
+<button type="button" class="icon-btn" aria-label="Koyu temaya geç"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></button>
+</div>
+</div>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1080px; margin: 0 auto; padding: 48px clamp(16px, 3vw, 40px) 64px; display: flex; flex-direction: column; gap: 28px">
+<section style="display: flex; flex-direction: column; gap: 12px; max-width: 760px">
+<h1 style="font-size: 32px; font-weight: 700; letter-spacing: -.02em">Hakkında</h1>
+<p style="font-size: 17px; line-height: 1.6">Bu proje, Borsa İstanbul'da "pompala ve boşalt" tipi piyasa dolandırıcılığının SPK kararından önce, yalnızca kamuya açık veriyle fark edilip edilemeyeceğini sınayan bir yazılım mühendisliği bitirme projesidir.</p>
+<p style="font-size: 15px; line-height: 1.6; color: var(--muted)">Amaç bir ön eleme aracı kurmak: uzmanın her hafta yüzlerce hisse yerine en şüpheli 20'sine bakmasını sağlamak ve bunun rastgeleden ne kadar iyi olduğunu dürüstçe ölçmek.</p>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px">
+<section class="card" aria-labelledby="au-h" style="padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<h2 id="au-h" class="eyebrow">Ekip</h2>
+<div style="display: flex; gap: 16px; align-items: center">
+<span aria-hidden="true" style="width: 56px; height: 56px; border-radius: 50%; background: var(--teal-soft); color: var(--teal-ink); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700">MK</span>
+<div style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 17px">Melih Erdem Koçoğlu</strong><span style="font-size: 14px; color: var(--muted)">Yazar · Yazılım Mühendisliği</span></div>
+</div>
+<div style="display: flex; gap: 16px; align-items: center">
+<span aria-hidden="true" style="width: 56px; height: 56px; border-radius: 50%; background: var(--surface-2); border: 1px dashed var(--line-2); color: var(--faint); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 17px">[Danışman adı]</strong><span style="font-size: 14px; color: var(--muted)">Tez danışmanı · [Unvan, bölüm]</span></div>
+</div>
+</section>
+
+<section class="card" aria-labelledby="pr-h" style="padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<h2 id="pr-h" class="eyebrow">Proje</h2>
+<dl class="kv" style="margin: 0">
+<dt>Program</dt><dd>Yazılım Mühendisliği Bitirme Projesi</dd>
+<dt>Dönem</dt><dd>2026–2027</dd>
+<dt>Kurum</dt><dd>[Üniversite adı]</dd>
+<dt>Değerlendirme</dt><dd>2012–2026 SPK vakaları</dd>
+<dt>Canlı test</dt><dd>Haziran 2027'de sonuçlanacak</dd>
+</dl>
+</section>
+</div>
+
+<section class="card" aria-labelledby="ln-h" style="padding: 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 6px; max-width: 560px">
+<h2 id="ln-h" style="font-size: 18px; font-weight: 600">Kod ve tez</h2>
+<p style="font-size: 14px; line-height: 1.55; color: var(--muted)">Veri hazırlama, modeller ve değerlendirme kodu açık. Tez metni tüm deneyleri, başarısız olanlar dahil, ayrıntılı anlatır.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<a href="https://github.com/" class="btn primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.3a4.9 4.9 0 0 0-1.3-3.4 4.6 4.6 0 0 0-.1-3.4s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.3 5.4 2.6 5.4 2.6a4.6 4.6 0 0 0-.1 3.4A4.9 4.9 0 0 0 4 9.4c0 4.9 3 6 5.8 6.3a3 3 0 0 0-.8 2.3V22"></path></svg>GitHub deposu</a>
+<a href="https://github.com/" class="btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M12 12v6M9 15l3 3 3-3"></path></svg>Tez PDF</a>
+</div>
+</section>
+
+<section aria-labelledby="st-h" style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="st-h" class="eyebrow">Kullanılan teknolojiler</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<span class="pill">Python</span><span class="pill">pandas</span><span class="pill">scikit-learn</span><span class="pill">LightGBM</span><span class="pill">PU öğrenme</span><span class="pill">PostgreSQL</span><span class="pill">[Web çatısı]</span>
+</div>
+</section>
+</main>
+
+<footer style="border-top: 1px solid var(--line); background: var(--surface)">
+<div style="max-width: 1360px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted)">
+<p style="display: flex; gap: 8px; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>Skorlar istatistiksel anomali sinyalidir, suçlama değildir. Yatırım tavsiyesi değildir.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<a href="https://github.com/" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.3a4.9 4.9 0 0 0-1.3-3.4 4.6 4.6 0 0 0-.1-3.4s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.3 5.4 2.6 5.4 2.6a4.6 4.6 0 0 0-.1 3.4A4.9 4.9 0 0 0 4 9.4c0 4.9 3 6 5.8 6.3a3 3 0 0 0-.8 2.3V22"></path></svg>GitHub</a>
+<span>Melih Erdem Koçoğlu · Yazılım Mühendisliği Bitirme Projesi 2026–2027</span>
+</div>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false,"section":"Tema"},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    return { rootClass: dark ? "app dark" : "app" };
+  }
+}
+</script>
+</body>
+</html>

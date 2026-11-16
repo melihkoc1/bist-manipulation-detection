@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# Gerçek veriler: scripts/export_web.py ile üretilir, depoya girmez
+public/data/
