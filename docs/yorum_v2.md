@@ -3,6 +3,36 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (17.11.2026): birleşim ağırlıklarını geçmişten öğrenmek — kazanç yok (Linear MEL-12)
+
+> Bu deneyin kodu depoya alınmadı. Ana birleşim eşit ağırlıklı kalıyor.
+
+**Soru.** Ana birleşimde (kural + PU) ağırlıklar sonuçlara bakılmadan eşit seçildi. Ağırlıkları
+veriden öğrenmek daha iyi olur mu?
+
+**Yöntem (dürüst).**
+- Her Y yılı için ağırlıklar yalnızca Y−1 sonuna kadar açıklanmış, dönemi bilinen vakalar ve
+  Y'den önceki haftalar üzerinde seçildi; Y yılı bu ağırlıklarla puanlandı.
+- Izgara araması (0,1 adım), hedef: haftalık AUC. Geçmişte 10'dan az vaka varsa eşit ağırlık.
+- Üç varyant: kural + PU; kural + PU + LightGBM; kural + Isolation Forest + PU.
+
+**Seçilen ağırlıklar.** Kural + PU için 2017'den sonra her yıl yaklaşık 0,3 / 0,7 (PU ağırlıklı).
+LightGBM eklenince ona hiç ağırlık verilmedi (0,0). Isolation Forest varyantında yaklaşık
+0,2 / 0,4 / 0,4.
+
+**Sonuç** (2017–2026, 123 vaka, eşli bootstrap, fark = öğrenilmiş − eşit ağırlıklı kural + PU):
+
+| Varyant | AUC | recall@20 | AUC farkı [%95 GA] | recall farkı [%95 GA] |
+|---|---|---|---|---|
+| Eşit ağırlık (ana) | 0,849 | 0,67 | — | — |
+| Kural + PU, öğrenilmiş | 0,850 | 0,68 | +0,000 [−0,005, +0,005] | +0,008 [−0,016, +0,041] |
+| Kural + PU + LightGBM, öğrenilmiş | 0,850 | 0,68 | +0,000 [−0,005, +0,005] | +0,008 [−0,016, +0,041] |
+| Kural + IForest + PU, öğrenilmiş | 0,856 | 0,67 | +0,007 [−0,003, +0,019] | +0,000 [−0,041, +0,049] |
+
+**Yorum.** Hiçbir fark anlamlı değil. Eşit ağırlık, öğrenilen ağırlıklara çok yakın bir sonuç
+veriyor; bu, birleşimin sonuçlara göre ayarlanmadan seçilmiş olmasının bir maliyeti olmadığını
+gösteriyor. Ana model eşit ağırlıklı kural + PU olarak kalıyor (daha basit ve önceden kayıtlı).
+
 ## Deneme (17.11.2026): hissenin SPK geçmişi göstergesi — olumsuz sonuç (Linear MEL-8)
 
 > Bu deneyin kodu depoya alınmadı. Sayılar, deneme sırasında yerelde çalıştırılan kodla elde edildi.
