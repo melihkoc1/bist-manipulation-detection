@@ -22,6 +22,7 @@ const LOG: { idea: [string, string]; ok: boolean; eff: [string, string]; date: s
   { idea: ["Eski SPK bültenleri (2009–2015) eklendi", "Older SPK bulletins (2009–2015) added"], ok: true, eff: ["Vaka 335 → 413; LightGBM AUC +0,05, PU +0,02 (anlamlı)", "Cases 335 → 413; LightGBM AUC +0.05, PU +0.02 (significant)"], date: "2026-10-22" },
   { idea: ["Kapanış / VWAP (\"kapanış oyunu\") göstergeleri", "Close / VWAP (\"marking the close\") features"], ok: false, eff: ["Modellere anlamlı katkı yok", "No significant gain inside the models"], date: "2026-10-23" },
   { idea: ["Kural + PU birleşimi (eşit ağırlıklı sıra ortalaması)", "Rules + PU ensemble (equal-weight rank average)"], ok: true, eff: ["En iyi model; AUC hem kurallardan hem PU'dan anlamlı yüksek", "Best model; AUC significantly above both rules and PU"], date: "2026-10-23" },
+  { idea: ["Hissenin SPK geçmişi (önceki vaka sayısı)", "Stock's SPK history (number of prior cases)"], ok: false, eff: ["Anlamlı kötüleşme (PU AUC −0,04); model \"sicili olan\" hisseleri öne çekti", "Significantly worse (PU AUC −0.04); the model favoured stocks with a record"], date: "2026-11-17" },
   { idea: ["Dönemi bilinmeyen vakaları tahminle etiketleme", "Estimating periods for cases without a stated period"], ok: false, eff: ["6 aylık pencereye göre kazanç yok; yalnızca belgelendi", "No gain over the 6-month window; documented only"], date: "2026-10-24" },
 ];
 
@@ -193,7 +194,7 @@ function Body({ idx }: { idx: Index }) {
           <table className="t">
             <thead><tr><th scope="col">{f.L("Fikir", "Idea")}</th><th scope="col">{f.L("Sonuç", "Outcome")}</th><th scope="col">{f.L("Etki", "Effect")}</th><th scope="col">{f.L("Tarih", "Date")}</th></tr></thead>
             <tbody>
-              {LOG.map((l) => (
+              {[...LOG].sort((a, b) => (a.date < b.date ? -1 : 1)).map((l) => (
                 <tr key={l.date + l.idea[0]}>
                   <td style={{ fontWeight: 500, padding: "11px 12px" }}>{f.L(...l.idea)}</td>
                   <td style={{ padding: "11px 12px" }}>{l.ok ? <span className="badge b-green"><Check size={12} />{f.L("İşe yaradı", "Worked")}</span>
