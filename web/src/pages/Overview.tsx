@@ -78,7 +78,7 @@ export default function Overview() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(420px, 100%), 1fr))", gap: 32 }}>
           {[
             { h: f.L("100 SPK vakasından kaçı ilk 20'de yakalandı?", "Of 100 SPK cases, how many were caught in the top 20?"), a: r.rec * 100, b: r.rnd * 100, approx: false },
-            { h: f.L("Listenin ilk 10'undaki 100 alarmdan kaçı SPK vakası?", "Of 100 alarms in the top 10, how many are SPK cases?"), a: r.prec10 * 100, b: rnd.prec10 * 100, approx: true },
+            { h: f.L("Sistem 100 hisseye \"şüpheli\" derse, kaçında gerçekten SPK'nın tespit ettiği bir manipülasyon var?", "If the system flags 100 stocks, how many turn out to be manipulation confirmed by SPK?"), a: r.prec10 * 100, b: rnd.prec10 * 100, approx: true },
           ].map((g) => (
             <div key={g.h} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <h3 style={{ fontSize: 16, fontWeight: 600 }}>{g.h}</h3>
@@ -95,8 +95,8 @@ export default function Overview() {
           ))}
         </div>
         <p style={{ fontSize: 14, lineHeight: 1.55, paddingTop: 16, borderTop: "1px solid var(--line)" }} className="muted">
-          {f.L(`Alarmların çoğu SPK vakası değildir; bu beklenen bir durumdur. Sistem bir ön eleme aracıdır: uzmanın bakacağı listeyi rastgeleye göre yaklaşık ${f.num(r.plift10, 0)} kat daha isabetli hâle getirir.`,
-               `Most alarms are not SPK cases, as expected. The system is a triage tool: it makes the list an analyst reviews about ${f.num(r.plift10, 0)}× more accurate than random.`)}
+          {f.L(`Kısacası: sistemin şüpheli bulduğu her 10 hisseden 1'i gerçek bir SPK manipülasyon vakası; rastgele seçimde bu oran 33'te 1. Geri kalanlar "temiz" demek değil, SPK'nın kararı olmayan hisselerdir (SPK her vakayı yakalamıyor). Sistem bir hüküm vermez; havalimanındaki güvenlik kapısı gibi önce nereye bakılacağını gösterir ve uzmanın listesini rastgeleye göre yaklaşık ${f.num(r.plift10, 0)} kat isabetli hâle getirir. (Ölçüm: her haftanın en şüpheli 10 hissesi, 2017–2026.)`,
+               `In short: 1 in every 10 stocks the system flags is a real SPK manipulation case; with random picks it is 1 in 33. The rest are not "clean": they are stocks without an SPK decision (SPK does not catch every case). The system does not deliver a verdict; like an airport security gate it shows where to look first, making an analyst's list about ${f.num(r.plift10, 0)}× more accurate than random. (Measured on each week's 10 most suspicious stocks, 2017–2026.)`)}
         </p>
       </section>
 
