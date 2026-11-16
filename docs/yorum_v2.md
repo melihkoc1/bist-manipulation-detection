@@ -3,6 +3,43 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (17.11.2026): hissenin SPK geçmişi göstergesi — olumsuz sonuç (Linear MEL-8)
+
+> Bu deneyin kodu depoya alınmadı. Sayılar, deneme sırasında yerelde çalıştırılan kodla elde edildi.
+
+**Soru.** Daha önce SPK vakası olan hisseler yeniden manipüle edilmeye daha mı yatkın? Bu bilgi
+modellere eklenince tespit iyileşir mi?
+
+**Göstergeler** (yalnızca o gün bilinen bilgi):
+- `spk_prior_cases`: SPK'nın bu hisse için daha önce açıkladığı vaka sayısı.
+- `spk_days_since_prior`: son açıklanan vakanın ilk kararından beri geçen gün (üst sınır 10 yıl).
+- Bir vaka, ilk kararının ilan gününden **sonraki** günden itibaren sayıldı.
+- Günün içinde bulunduğu vakanın kendisi sayılmadı. SPK aynı dönem için kararını zaten
+  açıkladıysa, o dönemi "tespit etmek" bir başarı değildir; bu, sonucu yapay olarak şişirirdi.
+- Her iki kural birim testleriyle doğrulandı.
+
+**Sinyal var mı?** 2017–2026'da SPK dönemindeki hisse-haftaların %53'ünde hissenin önceki bir
+vakası var; diğer haftalarda bu oran %41. Yani zayıf bir sinyal var.
+
+**Eğitim deneyi** (dürüst yıllık eğitim, 2017–2026, 123 vaka, eşleştirilmiş bootstrap; fark = deney − ana):
+
+| Model | AUC (ana → deney) | Fark [%95 GA] | recall@20 (ana → deney) | Fark [%95 GA] |
+|---|---|---|---|---|
+| LightGBM | 0,806 → 0,767 | −0,040 [−0,084, −0,004] anlamlı | 0,59 → 0,46 | −0,13 [−0,20, −0,07] anlamlı |
+| PU bagging | 0,833 → 0,794 | −0,040 [−0,084, −0,006] anlamlı | 0,62 → 0,50 | −0,11 [−0,17, −0,04] anlamlı |
+| Kural + PU | 0,849 → 0,837 | −0,013 [−0,035, +0,006] anlamsız | 0,67 → 0,62 | −0,05 [−0,09, −0,02] anlamlı |
+
+- **Kontrol.** Ana LightGBM skorları aynı kodla yeniden üretildi ve birebir aynı çıktı. Fark,
+  veri değişikliğinden değil göstergeden geliyor.
+- **Ne oldu?** Modellerin haftalık ilk 20'sinde önceki vakası olan hisselerin payı %44'ten %49'a
+  çıktı (tüm hisselerde %41). Model, geçmişi olan hisseleri öne çekti. Bu, gerçek manipülasyon
+  haftalarını değil, "sicili olan" hisselerin sıradan haftalarını listeye taşıdı.
+- **Yorum.** Bu, daha önce çıkarılan şirket profili göstergelerindeki sorunun aynısı: hisse
+  kimliğine bağlı bilgi, modelin "nasıl hareket ettiğine" değil "kim olduğuna" bakmasına yol
+  açıyor. Sonuç: **hisse kimliği / sicili göstergeleri modele eklenmez**; model yalnızca işlem
+  davranışından öğrenir. Bu, etik açıdan da tercih edilen yaklaşım (bir hissenin geçmişi, bugünkü
+  hareketinin şüpheli sayılması için gerekçe olmamalı).
+
 ## Deneme (25.10.2026): dönemi bilinmeyen vakaların eğitim etiketi — olumsuz sonuç
 
 > Bu deneyin kodu depoya alınmadı. Ana sonuçlar varsayılan yöntemle (karardan önceki 6 ay) üretildi.
