@@ -3,6 +3,43 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (17.11.2026): yükseliş sırasında içeriden satış — kazanç yok (Linear MEL-9)
+
+**Veri durumu.** KAP üst verisinde 18.617 "Pay Alım Satım Bildirimi" var (376 hisse). Yön (alış/satış)
+yalnız özetten anlaşılabiliyor: yalnız satış 1.726, yalnız alım 6.795 (1.924'ü şirketin kendi
+paylarını geri alımı), belirsiz 10.096. Bildirimlerin çoğu aracı kurum ve yatırım ortaklıklarının
+rutin işlem bildirimleri. Tutar ve kişi bilgisi bildirim gövdesinde; o veri indirilmedi.
+
+**Tanım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı): son 60 işlem gününde etkili olan
+satış ve alım bildirimi sayısı; "yükselişte satış" = satış bildirimi var ve 3 aylık getiri > %30.
+
+**Betimsel kontrol** (2012–2026, hisse-gün):
+
+| Grup | Son 60 günde satış bildirimi | Satış + yükseliş |
+|---|---|---|
+| SPK vaka günleri | %1,1 | %0,2 |
+| Rastgele günler | %1,7 | %0,4 |
+| 3 ayda +%50 yükselmiş, vaka dışı | %2,8 | %2,8 |
+
+SPK vakalarında satış bildirimi rastgele günlerden bile **az**. Vaka-yıl bazında 200 vakanın
+yalnız %2'sinde bildirilmiş bir satış var.
+
+**Model** (PU aynı ayarlarla + 3 gösterge, dürüst yıllık eğitim, 2017–2026, 123 vaka, deney − ana):
+
+| Model | AUC | yakalama@20 |
+|---|---|---|
+| PU | −0,002 [−0,012, +0,005] | −0,041 [−0,089, +0,000] |
+| Kural + PU | −0,000 [−0,006, +0,003] | −0,008 [−0,024, +0,000] |
+
+Hiçbiri anlamlı değil; kazanç yok. Deney kodu depoya alınmadı.
+
+**Yorum.**
+- SPK'nın ceza verdiği pompala-boşalt vakalarında satan taraf çoğunlukla bildirim yükümlülüğü
+  olmayan kişiler (yönetici veya büyük ortak değil). Bu yüzden KAP'ta "içeriden satış" izi bırakmıyor.
+- Bildirim gövdelerini indirip tutar ve kişiyi ayrıştırmak (aşama 2) şu an önerilmiyor: daha temiz
+  bir yön bilgisi, vakaların %2'sinde var olan bir olayı büyütmez. Kişi bazında işlem verisi ancak
+  aracı kurum dağılımıyla (AKD, MEL-19) gelir.
+
 ## Deneme (17.11.2026): yükselişi bütün olarak izleyen göstergeler — kazanç yok (Linear MEL-13)
 
 Tanım sonuçlara bakılmadan sabitlendi ve Linear'a yazıldı. Yükselişin başı = son 60 işlem günündeki en
