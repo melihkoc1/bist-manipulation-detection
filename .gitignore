@@ -12,3 +12,6 @@ data/db/
 
 # Yerel araç ayarları
 .claude/
+
+# Canlı test: donmuş model, haftalık tam listeler ve fiyat anlık görüntüleri (hisse adları depoya girmez)
+data/live/
