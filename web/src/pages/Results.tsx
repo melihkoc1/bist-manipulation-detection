@@ -164,6 +164,56 @@ function Body({ idx }: { idx: Index }) {
         </p>
       </section>
 
+      {/* Sayılar: scripts/false_alarms.py → docs/bos_alarmlar.md, elle örnek → docs/yorum_v2.md (MEL-16) */}
+      <section className="card" aria-labelledby="fa-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <h2 id="fa-h" style={{ fontSize: 18, fontWeight: 600 }}>{f.L("SPK kararı olmayan alarmlar: olağan dışı hareket", "Alarms without an SPK decision: unusual moves")}</h2>
+          <p style={{ fontSize: 14, lineHeight: 1.55 }} className="muted">
+            {f.L("Haftalık ilk 10'daki hisselerin çoğu için SPK kararı yok. Bunlar boş mu? Hayır: fiyat davranışı SPK vakalarına çok benziyor, rastgele hisselerden ise çok farklı. Bu hisseler SPK kararı olmasa da \"olağan dışı hareket\" olarak etiketlenebilir; ancak manipülasyon olduklarını yalnızca SPK kararı gösterebilir.",
+                 "Most stocks in the weekly top 10 have no SPK decision. Are they empty alarms? No: their price behaviour closely resembles SPK cases and differs sharply from random stocks. They can be labelled \"unusual moves\" even without an SPK decision; only an SPK decision can show they were manipulation.")}
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(380px, 100%), 1fr))", gap: 28 }}>
+          <div className="tbl-wrap">
+            <table className="t num">
+              <thead><tr><th scope="col"></th><th scope="col">{f.L("SPK vakası", "SPK case")}</th><th scope="col">{f.L("SPK kararı yok", "No SPK decision")}</th><th scope="col">{f.L("Rastgele hisse", "Random stock")}</th></tr></thead>
+              <tbody>
+                {[
+                  [f.L("Son 2 ayda yükseliş (medyan)", "Rise over the past 2 months (median)"), "%62", "%60", "%12"],
+                  [f.L("Borsa şirketten açıklama istedi", "Exchange asked the company to explain"), "%43", "%32", "%5"],
+                  [f.L("Sonra: yükseliş + çöküş", "Afterwards: rise then crash"), "%40", "%33", "%5"],
+                  [f.L("Veri hatası", "Data error"), "%0", "%0", "%0"],
+                ].map((r) => (
+                  <tr key={r[0]}><th scope="row" style={{ fontWeight: 500 }}>{r[0]}</th>{r.slice(1).map((v, i) => <td key={i}>{f.lang === "en" ? v.replace("%", "") + "%" : v}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <strong style={{ fontSize: 15, fontWeight: 600 }}>{f.L("Tek tek incelenen 30 örnek (hiç SPK kaydı olmayan hisseler)", "30 examples reviewed one by one (stocks with no SPK record)")}</strong>
+            {[
+              [14, f.L("Haber yokken sert yükseliş, ardından çöküş", "Sharp rise without news, then a crash")],
+              [9, f.L("Somut şirket haberiyle açıklanabilir", "Explained by concrete company news")],
+              [3, f.L("Yeni halka arz", "Recent IPO")],
+              [3, f.L("Kalıcı yükseliş", "Lasting rise")],
+              [1, f.L("Çok az hissesi işlem gören büyük şirket", "Large company with a tiny free float")],
+            ].map(([n, t]) => (
+              <div key={t as string} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 120px 24px", gap: 10, alignItems: "center", fontSize: 14 }}>
+                <span>{t}</span>
+                <span style={{ height: 10, borderRadius: 5, background: "var(--line)", overflow: "hidden" }}>
+                  <span style={{ display: "block", height: "100%", width: `${((n as number) / 14) * 100}%`, background: "var(--teal)" }} />
+                </span>
+                <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{n}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p style={{ fontSize: 12 }} className="faint">
+          {f.L("Kural + PU, her haftanın en şüpheli 10 hissesi, 2017–2026; aynı hissenin art arda alarmları tek dönem sayıldı (2.393 dönem). \"Sonra\" satırı geriye bakarak ölçülür, sistem bunu alarm anında bilemez. Şirket adları bilerek verilmez.",
+               "Rules + PU, each week's 10 most suspicious stocks, 2017–2026; consecutive alarms on the same stock counted as one episode (2,393 episodes). The \"afterwards\" row is measured in hindsight; the system cannot know it at alarm time. Company names are deliberately withheld.")}
+        </p>
+      </section>
+
       <section aria-labelledby="q-h" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <h2 id="q-h" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.01em" }}>{f.L("Tezin üç sorusu", "The thesis's three questions")}</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
