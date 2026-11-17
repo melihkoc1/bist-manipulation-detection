@@ -174,6 +174,9 @@ python scripts/ensemble_v2.py
 python scripts/evaluate_v2.py                        # → docs/sonuclar_v2.md
 python scripts/compare_v2.py                         # paired tests
 python scripts/case_studies.py IZFAS-0 SANEL-0 KGYO-0 KONYA-0 KUYAS-0
+python scripts/robustness.py                         # → docs/saglamlik.md
+python scripts/false_alarms.py                       # → docs/bos_alarmlar.md
+python scripts/explain_v2.py                         # SHAP, ~40 min → docs/aciklamalar.md
 
 python -m pytest
 ```
@@ -185,7 +188,7 @@ Some paired comparisons in `compare_v2.py` reference earlier score snapshots
 
 A local website for presenting the project (React + TypeScript + Vite; English / Turkish, light /
 dark theme, mobile-friendly). It needs the data pipeline above to have been run; its data is
-produced by `scripts/export_web.py` (`web/public/data/`, not in the repository).
+produced by `scripts/export_web.py` (`web/public/data/`, not in the repository). If `explain_v2.py` has been run, the "Why suspicious?" panel also shows the PU model's SHAP contributions.
 
 ```bash
 .venv/Scripts/python scripts/export_web.py      # ~2 min, ~115 MB of JSON

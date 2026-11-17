@@ -6,8 +6,10 @@ export const RULE_KEYS = [
 ] as const;
 export type RuleVals = (number | null)[]; // RULE_KEYS sırasıyla
 export type SpkLink = "" | "in" | "later";
-/** [hisse, sıra, yüzdelik (0–1), kural göstergeleri, SPK bağlantısı, karara kalan gün] */
-export type ListRow = [string, number, number, RuleVals, SpkLink, number | null];
+/** PU modelinin SHAP katkıları: [gösterge sırası (Index.shapFeats), log-odds katkı, göstergenin değeri] */
+export type Shap = [number, number, number | null][];
+/** [hisse, sıra, yüzdelik (0–1), kural göstergeleri, SPK bağlantısı, karara kalan gün, PU katkıları] */
+export type ListRow = [string, number, number, RuleVals, SpkLink, number | null, Shap?];
 
 export interface WeekEntry { end: string; start: string; n: number; inPeriod: number; lists: Record<string, ListRow[]> }
 export interface WeekMeta { end: string; start: string; n: number }
@@ -28,7 +30,7 @@ export interface CaseStudy {
   firstSpk: string | null; firstSanction: string | null;
 }
 export interface Index {
-  generated: string; models: string[]; rules: Record<string, number>; top: number;
+  generated: string; models: string[]; rules: Record<string, number>; top: number; shapFeats?: string[];
   weeks: WeekMeta[]; stocks: StockMeta[]; results: ResultRow[]; timing: Timing; cases: CaseStudy[];
   counts: { cases: number; decisions: number; kap: number; bulletinYears: [number, number];
             minWeek: number; maxWeek: number; meanWeek: number };
@@ -41,6 +43,7 @@ export interface StockData {
   ticker: string; name: string;
   prices: { d: string[]; c: (number | null)[]; v: (number | null)[] };
   ranks: RankRow[]; decisions: Decision[]; cases: StockCase[];
+  shap?: Record<string, Shap>; // hafta sonu → PU katkıları (yalnızca ilk 50'ye giren haftalar)
   kap: [string, string, "news" | "price" | "rumor" | "other", number][];
 }
 

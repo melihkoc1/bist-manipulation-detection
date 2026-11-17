@@ -3,6 +3,46 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## "Neden şüpheli?" açıklamaları — SHAP (17.11.2026, Linear MEL-14)
+
+Tablolar: [aciklamalar.md](aciklamalar.md) (`scripts/explain_v2.py`). Dürüst yıllık PU bagging
+modelleri aynı tohumla yeniden eğitildi ve LightGBM'in yerleşik TreeSHAP'iyle (ek paket yok) her
+göstergenin katkısı hesaplandı. Haftalık ilk 50'ye giren 52.594 hisse-hafta açıklandı.
+
+**Yeniden üretim:** yeniden eğitilen skorlar kayıtlı skorlarla birebir aynı (en büyük fark 0).
+Açıklamalar, değerlendirmede kullanılan modellerin kendisine ait.
+
+**Model en çok neye bakıyor?** (rastgele hisse-günlerde ortalama |katkı| payı, 2012–2026)
+
+| Gösterge | Pay |
+|---|---|
+| Halka açık payların haftalık devir hızı | %20,7 |
+| 3 aylık dipten yükseliş | %13,4 |
+| 3 aylık getiri | %5,2 |
+| Halka açık payların günlük devir hızı | %5,1 |
+| Son 10 günde ortalama fiyatın üstünde kapanış | %4,9 |
+
+- İlk iki gösterge tek başına modelin üçte birini açıklıyor ve üç dönemde de (2012–16, 2017–21,
+  2022–26) ilk iki sıra aynı. Model zaman içinde başka bir şeye kaymıyor.
+- Düz anlatım: PU modeli "halka açık payları çok hızlı el değiştiren ve dibinden sert kalkmış hisse"
+  örüntüsünü arıyor. Bu, pompala-boşalt anlatımıyla birebir örtüşüyor.
+- Tavan göstergeleri neredeyse hiç kullanılmıyor (%0–2): devir hızı ve dipten yükseliş aynı bilgiyi
+  zaten taşıyor.
+- Piyasanın aylık getirisi 2022–26'da daha önemli (%3 → %7): model, genel yükseliş dönemlerinde
+  hisseyi piyasaya göre değerlendirmeyi öğrenmiş (2022 zayıflığıyla tutarlı, bkz. sağlamlık testleri).
+
+**Kurallar ile PU neden birbirini tamamlıyor?** İlk 50 satırlarında PU'nun en büyük katkılı
+göstergesi yalnızca %4,5 oranında altı kural göstergesinden biri; kural göstergeleri PU'nun toplam
+katkısının yalnızca %16'sı. Kurallar "normaline göre artış" (oran) ölçerken PU devir hızının ve
+yükselişin **düzeyine** bakıyor. İki yöntem farklı bilgi kullandığı için birleşimleri ikisinden de
+iyi (AUC 0,85).
+
+**Sitede:** Zaman makinesi ve hisse sayfasındaki "Neden şüpheli?" paneli artık kural göstergelerinin
+altında "Öğrenen model (PU) en çok neye baktı?" bölümünü gösteriyor: skoru en çok artıran 5 ve en çok
+azaltan 2 gösterge, o günkü değerleriyle. Sınır: katkılar göstergeleri birlikte değerlendirir; tek bir
+katkı sezgiye ters görünebilir (ör. yüksek hacim bir hafta skoru azaltabilir, çünkü diğer göstergeler
+zaten aynı bilgiyi taşıyor). Kural + PU skorunun yalnızca öğrenen yarısını açıklar.
+
 ## Boş alarm incelemesi (17.11.2026, Linear MEL-16)
 
 Tablolar: [bos_alarmlar.md](bos_alarmlar.md) (`scripts/false_alarms.py`). Kural + PU, 2017–2026,

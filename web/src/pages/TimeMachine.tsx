@@ -4,7 +4,7 @@ import { addDays, EXAMPLES, useIndex, useJson, useStock, weekMonday, type Index,
 import { useT } from "../i18n";
 import { Page } from "../components/Layout";
 import { Arrow, Cal, ChevL, ChevR, Clock, Warn } from "../components/Icons";
-import { Loading, MODEL_NAMES, Note, ReasonChips, SpkBadge, SpkLegend, WhyPanel } from "../components/ui";
+import { Loading, MODEL_NAMES, Note, ReasonChips, ShapPanel, SpkBadge, SpkLegend, WhyPanel } from "../components/ui";
 import { MiniPrice } from "../components/charts";
 
 const LENS = [10, 20, 50];
@@ -246,6 +246,7 @@ function Preview({ idx, row, name, week, n }: { idx: Index; row: ListRow; name: 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <h3 style={{ fontSize: 15, fontWeight: 600 }}>{f.L("Neden şüpheli?", "Why suspicious?")}</h3>
         <WhyPanel vals={row[3]} thr={idx.rules} compact />
+        <ShapPanel shap={row[6]} feats={idx.shapFeats} compact />
       </div>
       <Link to={`/hisse/${row[0]}?hafta=${week}`} className="btn primary" style={{ alignSelf: "stretch" }}>{f.L("Hisse detayına git", "Open stock detail")}<Arrow /></Link>
     </aside>
@@ -279,6 +280,7 @@ function MobileCard({ r, name, open, idx, week, toggle }: { r: ListRow; name: st
                                 ariaLabel={f.L(`${r[0]} fiyat grafiği`, `${r[0]} price chart`)} /> : <Loading error={st.error} />}
           <h3 style={{ fontSize: 14, fontWeight: 600 }}>{f.L("Neden şüpheli?", "Why suspicious?")}</h3>
           <WhyPanel vals={r[3]} thr={idx.rules} compact />
+          <ShapPanel shap={r[6]} feats={idx.shapFeats} compact />
           <Link to={`/hisse/${r[0]}?hafta=${week}`} className="btn primary">{f.L("Hisse detayına git", "Open stock detail")}</Link>
         </div>
       )}

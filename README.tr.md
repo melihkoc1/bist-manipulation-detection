@@ -168,6 +168,9 @@ python scripts/ensemble_v2.py
 python scripts/evaluate_v2.py                        # → docs/sonuclar_v2.md
 python scripts/compare_v2.py                         # eşleştirilmiş testler
 python scripts/case_studies.py IZFAS-0 SANEL-0 KGYO-0 KONYA-0 KUYAS-0
+python scripts/robustness.py                         # → docs/saglamlik.md
+python scripts/false_alarms.py                       # → docs/bos_alarmlar.md
+python scripts/explain_v2.py                         # SHAP, ~40 dk → docs/aciklamalar.md
 
 python -m pytest
 ```
@@ -178,7 +181,7 @@ python -m pytest
 
 Projeyi göstermek için yerel bir web sitesi (React + TypeScript + Vite; Türkçe / İngilizce, açık / koyu
 tema, mobil uyumlu). Çalışması için yukarıdaki veri hattının çalıştırılmış olması gerekir; site verisini
-`scripts/export_web.py` üretir (`web/public/data/`, depoya girmez).
+`scripts/export_web.py` üretir (`web/public/data/`, depoya girmez). `explain_v2.py` çalıştırıldıysa "Neden şüpheli?" paneli PU modelinin SHAP katkılarını da gösterir.
 
 ```bash
 .venv/Scripts/python scripts/export_web.py      # ~2 dk, ~115 MB JSON

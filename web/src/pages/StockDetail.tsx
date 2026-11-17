@@ -4,7 +4,7 @@ import { addDays, dayDiff, firstAlert, useIndex, useStock, weekMonday, type Inde
 import { useT } from "../i18n";
 import { Page } from "../components/Layout";
 import { Search, Tri } from "../components/Icons";
-import { ChartLegend, DECISION_TYPES, Loading, WhyPanel } from "../components/ui";
+import { ChartLegend, DECISION_TYPES, Loading, ShapPanel, WhyPanel } from "../components/ui";
 import { StockChart } from "../components/charts";
 
 const RANGES = [["6A", "6M", 183], ["1Y", "1Y", 365], ["2Y", "2Y", 730], ["Tümü", "All", 0]] as const;
@@ -160,7 +160,8 @@ function Body({ idx, d }: { idx: Index; d: StockData }) {
             <h2 id="why-h" style={{ fontSize: 16, fontWeight: 600 }}>{f.L("Neden şüpheli?", "Why suspicious?")}</h2>
             {selected && <span style={{ fontSize: 13 }} className="muted">{f.range(weekMonday(selected[0]), selected[0])} · {f.L("sıra", "rank")} {selected[1]} / {selected[2]}</span>}
           </div>
-          {selected ? <WhyPanel vals={selected.slice(3) as (number | null)[]} thr={idx.rules} /> : <p className="muted">—</p>}
+          {selected ? <WhyPanel vals={selected.slice(3, 9) as (number | null)[]} thr={idx.rules} /> : <p className="muted">—</p>}
+          {selected && <ShapPanel shap={d.shap?.[selected[0]]} feats={idx.shapFeats} />}
         </section>
 
         <section className="card" aria-labelledby="spk-h" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>

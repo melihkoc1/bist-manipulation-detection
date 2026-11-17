@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { getResult, RULE_KEYS, type Index, type RuleVals, type SpkLink } from "../data";
+import { getResult, RULE_KEYS, type Index, type RuleVals, type Shap, type SpkLink } from "../data";
 import { useT } from "../i18n";
 import { Check, Clock, Dash, Info, Tri } from "./Icons";
 
@@ -115,9 +115,96 @@ export function WhyPanel({ vals, thr, compact = false }: { vals: RuleVals | unde
         <p style={{ fontSize: 13 }} className="muted">{f.L("Bu hafta hiçbir kural eşiği aşılmadı; sıra, PU modelinin öğrendiği örüntüden geliyor.", "No rule threshold was crossed this week; the rank comes from the pattern the PU model learned.")}</p>
       )}
       <p style={{ fontSize: 12 }} className="faint">
-        {f.L("Çubuk, göstergenin kural eşiğine oranıdır (dolu ve yeşil = eşik aşıldı). Bunlar kural göstergeleridir; PU modelinin ayrıntılı katkıları değildir. Bir suçlama değildir.",
-             "Each bar is the indicator relative to its rule threshold (full and green = crossed). These are rule indicators, not detailed PU model contributions. Not an accusation.")}
+        {f.L("Çubuk, göstergenin kural eşiğine oranıdır (dolu ve yeşil = eşik aşıldı). Bunlar kural göstergeleridir; öğrenen modelin gerekçesi ayrıca gösterilir. Bir suçlama değildir.",
+             "Each bar is the indicator relative to its rule threshold (full and green = crossed). These are rule indicators; the learned model's reasoning is shown separately. Not an accusation.")}
       </p>
+    </div>
+  );
+}
+
+// ---- PU modelinin göstergeleri (SHAP açıklaması için düz Türkçe adlar) ----
+type FeatKind = "pct" | "x" | "n" | "loc" | "z" | "flag";
+export const FEATURE_TEXT: Record<string, { label: [string, string]; kind: FeatKind }> = {
+  ret_1: { label: ["Günlük getiri", "Daily return"], kind: "pct" },
+  ret_5: { label: ["1 haftalık getiri", "1-week return"], kind: "pct" },
+  ret_20: { label: ["1 aylık getiri", "1-month return"], kind: "pct" },
+  ret_60: { label: ["3 aylık getiri", "3-month return"], kind: "pct" },
+  vol_20: { label: ["Günlük oynaklık (1 ay)", "Daily volatility (1 month)"], kind: "pct" },
+  ret_5_z: { label: ["Haftalık getirinin olağan dışılığı", "Unusual weekly return"], kind: "z" },
+  ret_20_z: { label: ["Aylık getirinin olağan dışılığı", "Unusual monthly return"], kind: "z" },
+  vol_ratio_20_60: { label: ["Oynaklık artışı", "Volatility increase"], kind: "x" },
+  xu_ret_20: { label: ["Piyasanın aylık getirisi", "Market 1-month return"], kind: "pct" },
+  excess_ret_5: { label: ["Endeks üstü getiri (1 hafta)", "Excess return (1 week)"], kind: "pct" },
+  excess_ret_20: { label: ["Endeks üstü getiri (1 ay)", "Excess return (1 month)"], kind: "pct" },
+  up_while_market_down_20: { label: ["Piyasa düşerken sert yükseliş", "Sharp rise while market falls"], kind: "flag" },
+  value_ratio_20: { label: ["Günlük hacim / 1 ay normali", "Daily value / 1-month normal"], kind: "x" },
+  value_ratio_60: { label: ["Günlük hacim / 3 ay normali", "Daily value / 3-month normal"], kind: "x" },
+  value_up_streak: { label: ["Hacmin art arda arttığı gün", "Days of rising volume in a row"], kind: "n" },
+  value_ratio_5d_60: { label: ["Haftalık hacim / 3 ay normali", "Weekly value / 3-month normal"], kind: "x" },
+  float_turnover: { label: ["Halka açık devir (gün)", "Free-float turnover (day)"], kind: "pct" },
+  float_turnover_5: { label: ["Halka açık devir (hafta)", "Free-float turnover (week)"], kind: "pct" },
+  float_turnover_ratio_60: { label: ["Halka açık devir artışı", "Free-float turnover increase"], kind: "x" },
+  close_loc: { label: ["Gün içi tepede kapanış", "Close near daily high"], kind: "loc" },
+  close_loc_5: { label: ["Hafta boyu tepede kapanış", "Closes near high (week)"], kind: "loc" },
+  limit_up: { label: ["Tavan", "Limit-up"], kind: "flag" },
+  limit_up_streak: { label: ["Art arda tavan", "Limit-ups in a row"], kind: "n" },
+  limit_up_10: { label: ["10 günde tavan sayısı", "Limit-ups in 10 days"], kind: "n" },
+  up_days_10: { label: ["10 günde yükselen gün", "Up days out of 10"], kind: "n" },
+  close_vs_vwap: { label: ["Kapanış / ortalama fiyat", "Close vs average price"], kind: "pct" },
+  close_vs_vwap_5: { label: ["Kapanış / ortalama fiyat (hafta)", "Close vs average price (week)"], kind: "pct" },
+  close_vs_vwap_5_z: { label: ["Kapanış oyununun olağan dışılığı", "Unusual close vs average"], kind: "z" },
+  close_above_vwap_10: { label: ["10 günde ortalamanın üstünde kapanış", "Closes above average in 10 days"], kind: "n" },
+  drawdown_from_60_high: { label: ["3 aylık zirveden uzaklık", "Distance from 3-month high"], kind: "pct" },
+  dist_from_60_low: { label: ["3 aylık dipten yükseliş", "Rise from 3-month low"], kind: "pct" },
+  trading_gap_60: { label: ["Uzun işlem arası (3 ay)", "Long trading gaps (3 months)"], kind: "n" },
+};
+
+function featVal(kind: FeatKind, v: number | null, f: Fmt): string {
+  if (v == null) return "—";
+  switch (kind) {
+    case "pct": return `${v > 0 ? "+" : v < 0 ? "−" : ""}${f.pct(Math.abs(v))}`;
+    case "x": return f.times(v);
+    case "loc": return f.pct(v);
+    case "z": return f.num(v, 1);
+    case "flag": return v >= 0.5 ? f.L("evet", "yes") : f.L("hayır", "no");
+    default: return String(Math.round(v));
+  }
+}
+
+/** Öğrenen modelin (PU) bu hisse-haftadaki gerekçesi: SHAP katkısı en büyük göstergeler. */
+export function ShapPanel({ shap, feats, compact = false }: { shap: Shap | undefined; feats: string[] | undefined; compact?: boolean }) {
+  const f = useT();
+  if (!shap || !feats || !shap.length) return null;
+  const up = shap.filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, compact ? 4 : 5);
+  const down = shap.filter((x) => x[1] < 0).sort((a, b) => a[1] - b[1]).slice(0, compact ? 1 : 2);
+  const max = Math.max(...[...up, ...down].map((x) => Math.abs(x[1])), 1e-9);
+  const col = compact ? "minmax(0, 1fr) 70px 56px" : "minmax(0, 1fr) 110px 64px";
+  const line = (x: Shap[number]) => {
+    const name = feats[x[0]];
+    const t = FEATURE_TEXT[name] ?? { label: [name, name] as [string, string], kind: "z" as FeatKind };
+    return (
+      <div key={name} style={{ display: "grid", gridTemplateColumns: col, gap: 10, alignItems: "center", fontSize: 13 }}>
+        <span className="muted">{f.L(...t.label)}</span>
+        <span className="bar" style={{ height: compact ? 8 : 10, borderRadius: 3 }} role="img"
+              aria-label={`${f.L(...t.label)}: ${x[1] > 0 ? f.L("şüpheyi artırdı", "raised suspicion") : f.L("şüpheyi azalttı", "lowered suspicion")}`}>
+          <span className={x[1] > 0 ? "" : "rand"} style={{ width: `${(Math.abs(x[1]) / max) * 100}%`, borderRadius: 3 }} />
+        </span>
+        <span style={{ textAlign: "right", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{featVal(t.kind, x[2], f)}</span>
+      </div>
+    );
+  };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <strong style={{ fontSize: 13, fontWeight: 600 }}>{f.L("Öğrenen model (PU) en çok neye baktı?", "What did the learned model (PU) weigh most?")}</strong>
+      {up.map(line)}
+      {down.length > 0 && <span style={{ fontSize: 12 }} className="faint">{f.L("Şüpheyi azaltan:", "Lowering suspicion:")}</span>}
+      {down.map(line)}
+      {!compact && (
+        <p style={{ fontSize: 12 }} className="faint">
+          {f.L("Çubuk, göstergenin modelin kararına katkısının büyüklüğüdür (SHAP); sağdaki sayı göstergenin o günkü değeri. Model göstergeleri birlikte değerlendirir; tek bir katkı tek başına sezgiye ters görünebilir. Kural + PU skorunun öğrenen yarısını açıklar.",
+               "Bar length is the indicator's contribution to the model's decision (SHAP); the number is the indicator's value that day. The model weighs indicators together, so a single contribution can look counter-intuitive on its own. Explains the learned half of the Rules + PU score.")}
+        </p>
+      )}
     </div>
   );
 }

@@ -6,8 +6,9 @@ data/interim/features.parquet (kural göstergeleri), data/interim/results/*.csv.
   index.json          sonuç tabloları, zamanlama, vaka çalışmaları, hafta ve hisse listeleri
   weeks/<yıl>.json    her hafta, her model için ilk 50 hisse + kurallar + SPK bağlantısı
   stocks/<KOD>.json   fiyat, hacim, haftalık sıra, kural göstergeleri, SPK kararları, KAP
+Varsa data/interim/explain/pu_contrib.parquet (explain_v2.py): ilk 50 satırlarına PU SHAP katkıları.
 
-Önkoşul: score_v2.py --mode honest, ensemble_v2.py, evaluate_v2.py, case_studies.py
+Önkoşul: score_v2.py --mode honest, ensemble_v2.py, evaluate_v2.py, case_studies.py[, explain_v2.py]
 Kullanım: python scripts/export_web.py
 """
 
@@ -106,7 +107,30 @@ def spk_link(ticker: str, ws: pd.Timestamp, we: pd.Timestamp, by_ticker: dict) -
     return "", None
 
 
-def export_weeks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame) -> list[dict]:
+SHAP_UP, SHAP_DOWN = 5, 2
+
+
+def load_shap() -> tuple[list[str], dict]:
+    """(gösterge adları, {(hisse, hafta sonu): [[gösterge sırası, katkı, değer], ...]}).
+    Satır başına skoru en çok artıran SHAP_UP ve en çok azaltan SHAP_DOWN gösterge tutulur."""
+    path = INTERIM / "explain" / "pu_contrib.parquet"
+    if not path.exists():
+        return [], {}
+    c = pd.read_parquet(path)
+    feats = [x for x in c.columns if x not in ("week", "ticker", "date", "score", "_base", "year")]
+    f = pd.read_parquet(INTERIM / "features.parquet", columns=["ticker", "date", *feats])
+    vals = c[["ticker", "date"]].merge(f, on=["ticker", "date"], how="left")[feats].to_numpy()
+    con = c[feats].to_numpy()
+    week_end = pd.PeriodIndex(c["week"], freq="W-FRI").end_time.normalize()
+    out = {}
+    for i, (t, we) in enumerate(zip(c["ticker"], week_end)):
+        order = np.argsort(con[i])
+        pick = [j for j in order[::-1][:SHAP_UP] if con[i, j] > 0] + [j for j in order[:SHAP_DOWN] if con[i, j] < 0]
+        out[(t, we)] = [[int(j), r(con[i, j], 3), r(vals[i, j])] for j in pick]
+    return feats, out
+
+
+def export_weeks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, shap: dict) -> list[dict]:
     core = cases[cases["core"]]
     by_ticker = {t: g for t, g in core.groupby("ticker")}
     exact = core[core["known_period"]]
@@ -134,7 +158,10 @@ def export_weeks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame) -> list[
             for row in ([] if t is None else t.itertuples()):
                 rv = rules.loc[(row.ticker, we)].tolist() if (row.ticker, we) in rules.index else [None] * 6
                 link, days = spk_link(row.ticker, ws, we, by_ticker)
-                rows.append([row.ticker, int(row.rank), r(row.pct, 4), [r(v) for v in rv], link, days])
+                rw = [row.ticker, int(row.rank), r(row.pct, 4), [r(v) for v in rv], link, days]
+                if (row.ticker, we) in shap:
+                    rw.append(shap[(row.ticker, we)])
+                rows.append(rw)
             entry["lists"][mdl] = rows
         out_years.setdefault(we.year, []).append(entry)
         index.append({"end": entry["end"], "start": entry["start"], "n": entry["n"]})
@@ -148,7 +175,8 @@ def classify_kap(kap: pd.DataFrame) -> pd.Series:
     return cat.map(KAP_GROUP).fillna("other")
 
 
-def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisions: pd.DataFrame) -> list[dict]:
+def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisions: pd.DataFrame,
+                  shap: dict) -> list[dict]:
     wk = load_week_scores("4_kural_pu")
     tickers = sorted(set(wk["ticker"]) | set(cases.loc[cases["core"], "ticker"]))
     prices = query("SELECT ticker, date, close, value_try FROM prices ORDER BY ticker, date")
@@ -163,6 +191,9 @@ def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisio
     d_by = dict(tuple(decisions.groupby("ticker")))
     c_by = dict(tuple(cases.groupby("ticker")))
     rules_by = {t: g.droplevel(0) for t, g in rules.groupby(level=0)}
+    s_by: dict[str, dict] = {}
+    for (tk, we), v in shap.items():
+        s_by.setdefault(tk, {})[iso(we)] = v
     out = []
     for t in tickers:
         p = p_by.get(t, pd.DataFrame(columns=["date", "close", "value_try"]))
@@ -183,7 +214,8 @@ def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisio
         obj = {"ticker": t, "name": names.get(t, ""),
                "prices": {"d": [iso(x) for x in p["date"]], "c": [r(x, 4) for x in p["close"]],
                           "v": [None if pd.isna(x) else int(x) for x in p["value_try"]]},
-               "ranks": ranks, "decisions": dec, "cases": cs, "kap": kp}
+               "ranks": ranks, "decisions": dec, "cases": cs, "kap": kp,
+               "shap": s_by.get(t, {})}
         dump(OUT / "stocks" / f"{t}.json", obj)
         out.append({"t": t, "name": names.get(t, ""), "nDec": len(dec),
                     "nCore": int(c["core"].sum()) if len(c) else 0, "scored": bool(len(w))})
@@ -260,14 +292,15 @@ def main() -> None:
     print("kural göstergeleri…", flush=True)
     rules = weekly_rule_values()
     print(f"haftalar… ({time.time() - t0:.0f} sn)", flush=True)
-    weeks = export_weeks(names, rules, cases)
+    shap_feats, shap = load_shap()
+    weeks = export_weeks(names, rules, cases, shap)
     print(f"hisseler… ({time.time() - t0:.0f} sn)", flush=True)
-    stocks = export_stocks(names, rules, cases, decisions)
+    stocks = export_stocks(names, rules, cases, decisions, shap)
     print(f"özet… ({time.time() - t0:.0f} sn)", flush=True)
     n_kap = int(query("SELECT count(*) AS n FROM kap_disclosures")["n"][0])
     index = {
         "generated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-        "models": LIST_MODELS, "rules": RuleScore.RULES, "top": TOP,
+        "models": LIST_MODELS, "rules": RuleScore.RULES, "top": TOP, "shapFeats": shap_feats,
         "weeks": weeks, "stocks": stocks,
         "results": results_table(), "timing": timing(decisions),
         "cases": case_studies(cases, decisions),
