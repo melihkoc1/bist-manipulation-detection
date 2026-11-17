@@ -177,6 +177,20 @@ python -m pytest
 
 `compare_v2.py` içindeki bazı eşleştirilmiş karşılaştırmalar daha önceki skor anlık görüntülerini kullanır (`scores_v2_before`, `scores_v2_novwap`). Bu klasörler yoksa o karşılaştırmalar atlanır.
 
+## Canlı test (ileriye dönük)
+
+Model 17.11.2026'da donduruldu; her haftanın ilk 20 listesi, sonucu kimse bilmeden kaydediliyor ve
+Haziran 2027'de yeni SPK kararlarıyla karşılaştırılacak. Değerlendirme planı ilk listeden önce yazıldı:
+[docs/canli_test/protokol.md](docs/canli_test/protokol.md). Depoya listelerin yalnızca parmak izi
+(sha256) girer ([kayit.csv](docs/canli_test/kayit.csv)); listelerin kendisi yerelde kalır (`data/live/`).
+
+```bash
+python scripts/live_freeze.py          # bir kez (yapıldı): PU modelini eğitip dondurur
+python scripts/live_week.py            # her hafta sonu: geçen haftanın listesini kaydeder (~25 dk)
+python scripts/live_week.py --verify   # tüm parmak izlerini denetler
+python scripts/export_web.py --live    # sitede yalnız "Canlı test" sayfasını yeniler
+```
+
 ## Tanıtım sitesi
 
 Projeyi göstermek için yerel bir web sitesi (React + TypeScript + Vite; Türkçe / İngilizce, açık / koyu

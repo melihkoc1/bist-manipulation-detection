@@ -7,6 +7,7 @@ Adımlar:
 2. Fiyat göstergeleri araştırmadaki kodla (bistmd.features.price) hesaplanır.
 3. Hafta, donmuş Kural + PU ile skorlanır (ana değerlendirmedeki haftalık yüzdelik birleşimi).
 4. Tam liste data/live/weeks/<hafta>.parquet, ilk 20 data/live/weeks/<hafta>_ilk20.csv olarak yazılır.
+   (Fiyat indirme ~25 dk sürer: ~630 hisse, İş Yatırım yanıtı hisse başına ~2 sn.)
    İlk 20 dosyasının sha256 parmak izi docs/canli_test/kayit.csv'ye eklenir (hisse adı yok).
    Kaydedilmiş bir hafta yeniden yazılmaz.
 
@@ -127,6 +128,8 @@ def main() -> None:
     ap.add_argument("--week", help="haftanın cuma tarihi (YYYY-AA-GG)")
     ap.add_argument("--verify", action="store_true")
     ap.add_argument("--pause", type=float, default=0.3)
+    ap.add_argument("--prices-from", help="indirmek yerine daha sonraki bir haftanın fiyat anlık görüntüsünü kullan "
+                    "(kaçırılmış haftaları geriye doğru kaydetmek için)")
     args = ap.parse_args()
     if args.verify:
         return verify()
@@ -144,11 +147,16 @@ def main() -> None:
         sys.exit("Donmuş model dosyası manifestle uyuşmuyor.")
 
     t0 = time.time()
-    prices = fetch_prices(week_end, args.pause)
+    if args.prices_from:
+        prices = pd.read_parquet(LIVE / "prices" / f"{args.prices_from}.parquet")
+        prices = prices[prices["date"].between(week_end - HISTORY, week_end)]
+    else:
+        prices = fetch_prices(week_end, args.pause)
     prices = prices[prices["close"].notna()]
-    snap = LIVE / "prices" / f"{week_end:%Y-%m-%d}.parquet"
-    snap.parent.mkdir(parents=True, exist_ok=True)
-    prices.to_parquet(snap, index=False)
+    if not args.prices_from:
+        snap = LIVE / "prices" / f"{week_end:%Y-%m-%d}.parquet"
+        snap.parent.mkdir(parents=True, exist_ok=True)
+        prices.to_parquet(snap, index=False)
     data_end = prices["date"].max()
     if data_end < week_end - pd.Timedelta(days=4):
         sys.exit(f"Fiyat verisi haftayı kapsamıyor (son gün {data_end:%Y-%m-%d}).")

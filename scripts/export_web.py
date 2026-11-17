@@ -279,7 +279,35 @@ def case_studies(cases: pd.DataFrame, decisions: pd.DataFrame) -> list[dict]:
     return out
 
 
+def export_live() -> None:
+    """Canlı test özeti (MEL-17): yalnız kayıt üst verisi ve parmak izleri; hisse adı yok."""
+    import csv
+    man_p, log_p = ROOT / "docs" / "canli_test" / "model.json", ROOT / "docs" / "canli_test" / "kayit.csv"
+    if not man_p.exists():
+        return
+    man = json.loads(man_p.read_text(encoding="utf-8"))
+    rows = sorted(csv.DictReader(open(log_p, encoding="utf-8")), key=lambda x: x["hafta_sonu"]) if log_p.exists() else []
+    distinct = set()
+    for r_ in rows:
+        f = ROOT / "data" / "live" / "weeks" / f"{r_['hafta_sonu']}_ilk20.csv"
+        if f.exists():
+            distinct |= {ln.split(",")[1] for ln in f.read_text(encoding="utf-8").splitlines()[1:] if ln}
+    dump(OUT / "live.json", {
+        "frozen": man["dondurma_zamani_utc"][:10], "dataEnd": man["veri_son_gun"],
+        "labelCutoff": man["etiket_kesimi_son_spk_karari"], "knownCases": man["bilinen_vaka"],
+        "modelSha": man["model_sha256"], "codeCommit": man["kod_commit"],
+        "weeks": [[r_["hafta_sonu"], r_["kayit_zamani_utc"], int(r_["gecikmeli"]), int(r_["n_hisse"]), r_["sha256_ilk20"]]
+                  for r_ in rows],
+        "distinct": len(distinct),
+    })
+
+
 def main() -> None:
+    if "--live" in sys.argv:  # yalnız canlı test özeti (tam dışa aktarım ~dakikalar sürer)
+        OUT.mkdir(parents=True, exist_ok=True)
+        export_live()
+        print("live.json yazıldı")
+        return
     t0 = time.time()
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -312,6 +340,7 @@ def main() -> None:
                    "meanWeek": round(float(np.mean([w["n"] for w in weeks])))},
     }
     dump(OUT / "index.json", index)
+    export_live()
     size = sum(f.stat().st_size for f in OUT.rglob("*.json")) / 1e6
     print(f"bitti: {len(weeks)} hafta, {len(stocks)} hisse, {size:.0f} MB → {OUT.relative_to(ROOT)} "
           f"({time.time() - t0:.0f} sn)")

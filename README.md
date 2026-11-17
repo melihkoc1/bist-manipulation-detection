@@ -184,6 +184,21 @@ python -m pytest
 Some paired comparisons in `compare_v2.py` reference earlier score snapshots
 (`scores_v2_before`, `scores_v2_novwap`). They are skipped when those folders are missing.
 
+## Live test (prospective)
+
+The model was frozen on 2026-11-17 and every week's top-20 list is recorded before any outcome is
+known; in June 2027 the lists will be compared with the new SPK decisions. The evaluation plan was
+written before the first list: [docs/canli_test/protokol.md](docs/canli_test/protokol.md). Only the
+fingerprints (sha256) of the lists enter the repository ([kayit.csv](docs/canli_test/kayit.csv));
+the lists themselves stay local (`data/live/`).
+
+```bash
+python scripts/live_freeze.py          # once (already done): trains and freezes the PU model
+python scripts/live_week.py            # every weekend: records last week's list (~25 min)
+python scripts/live_week.py --verify   # checks all fingerprints
+python scripts/export_web.py --live    # refreshes only the site's "Live test" page
+```
+
 ## Demo site
 
 A local website for presenting the project (React + TypeScript + Vite; English / Turkish, light /
