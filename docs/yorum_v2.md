@@ -3,6 +3,42 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (17.11.2026): model paketi — yakın tarih ağırlığı, lambdarank, zamana dürüst ayar — kazanç yok (Linear MEL-12)
+
+Üç fikir PU bagging üzerinde denendi; ayarlar sonuçlara bakılmadan önce sabitlendi ve Linear'a
+yazıldı. Her biri dürüst yıllık eğitimle 2012–2026 skorlandı, Kural + PU birleşimi yeniden kuruldu
+ve ana skorlarla aynı vakalarda eşli bootstrap ile karşılaştırıldı (`scripts/exp_compare.py`).
+Deney kodu depoya alınmadı.
+
+1. **Yakın tarih ağırlığı:** eğitim satırlarına 0,5^(yaş / 3 yıl) ağırlığı (eski yılların etkisi azalır).
+2. **Lambdarank:** PU torbaları, "şüpheli mi?" yerine "o gün hangisi daha şüpheli?" sorusunu doğrudan
+   öğrenen sıralama hedefiyle eğitildi (grup = işlem günü).
+3. **Zamana dürüst ayar seçimi:** iki ek ayar (sade: num_leaves 15 / min_child 100; karmaşık: 63 / 20)
+   baştan sona skorlandı. Her Y yılı için, Y'den önceki haftalarda ve yalnızca Y−1 sonuna kadar
+   açıklanmış vakalarla haftalık AUC'si en iyi olan ayar seçildi. (Protokol notu: doğrulama penceresi
+   başta "yalnız Y−1" diye yazılmıştı; sonuçlar görülmeden "2012..Y−1" yapıldı, çünkü tek yılda bilinen
+   vaka çok az.) Seçim 2014'ten itibaren 13 yılın 12'sinde "sade" ayarı oldu.
+
+Sonuçlar (2017–2026, 123 vaka, deney − ana, eşli bootstrap %95 GA):
+
+| Deneme | PU AUC | Kural + PU AUC | Kural + PU yakalama@20 | Karar |
+|---|---|---|---|---|
+| Yakın tarih ağırlığı | −0,010 [−0,026, +0,004] | −0,005 [−0,014, +0,002] | −0,016 | ✗ anlamsız kötüleşme |
+| Lambdarank | **−0,018** [−0,031, −0,005] | **−0,007** [−0,013, −0,001] | **−0,057** [−0,106, −0,016] | ✗ anlamlı kötüleşme |
+| Sade ayar | **+0,006** [+0,002, +0,010] | +0,001 [−0,001, +0,003] | 0,000 | ✗ ana modelde kazanç yok |
+| Karmaşık ayar | **−0,007** [−0,011, −0,003] | −0,002 [−0,004, +0,000] | −0,016 | ✗ |
+| Zamana dürüst seçim | **+0,005** [+0,002, +0,010] | +0,001 [−0,001, +0,003] | 0,000 | ✗ ana modelde kazanç yok |
+
+**Yorum.**
+- Eski yıllar da bilgi taşıyor: SPK vakaları az olduğu için eski vakaların etkisini azaltmak modeli
+  zayıflatıyor. Manipülasyon örüntüsü zaman içinde pek değişmiyor (SHAP bulgusuyla tutarlı).
+- Lambdarank açıkça kötü: her günün grubunda pozitif çok nadir; sıralama hedefi bu kadar seyrek
+  etikette sınıflandırmadan daha az bilgi çıkarıyor.
+- Sade ağaçlar PU'yu tek başına biraz iyileştiriyor (AUC +0,006), ama kurallarla birleşince fark
+  kayboluyor; ilk 10 isabeti de değişmiyor. Ana model ve önceden belirlenmiş ayarlar korundu.
+- Sonuç: model tarafında "ucuz" iyileştirmeler tükendi; kalan kazanç büyük olasılıkla daha çok etiketten
+  (MEL-10) veya yeni bilgiden (içeriden satış, Borsa tedbirleri) gelecek.
+
 ## "Neden şüpheli?" açıklamaları — SHAP (17.11.2026, Linear MEL-14)
 
 Tablolar: [aciklamalar.md](aciklamalar.md) (`scripts/explain_v2.py`). Dürüst yıllık PU bagging
