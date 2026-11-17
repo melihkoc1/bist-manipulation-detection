@@ -3,6 +3,56 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Boş alarm incelemesi (17.11.2026, Linear MEL-16)
+
+Tablolar: [bos_alarmlar.md](bos_alarmlar.md) (`scripts/false_alarms.py`). Kural + PU, 2017–2026,
+haftalık ilk 10. Aynı hissenin ≤4 hafta arayla gelen alarm haftaları tek "alarm dönemi" sayıldı:
+2393 dönem, bunların 2316'sı (%97) ana set SPK vakasına değmiyor. Şirket adları bilerek yazılmadı.
+
+**1. Veri hatası yok.** Boş alarmların hiçbirinde son 20 günde günlük fiyat sınırını aşan (|getiri|
+> %25) bir sıçrama yok. Yani liste, düzeltilmemiş bölünme/bedelsiz gibi veri hatalarıyla dolmuyor.
+
+**2. Boş alarmlar da gerçekten olağan dışı hareketler.** Rastgele hisse-haftalarla karşılaştırma:
+
+| | İsabet | Boş alarm | Rastgele hisse-hafta |
+|---|---|---|---|
+| Önceki 60 günde yükseliş (medyan) | %62 | %60 | %12 |
+| Borsa "olağan dışı hareket" açıklaması istedi | %43 | %32 | %5 |
+| Sonradan pompa-boşalt şekli (≥%50 çıkış, ≥%40 düşüş) | %40 | %33 | %5 |
+
+Boş alarmlar fiyat davranışı bakımından isabetlere çok benziyor ve rastgeleden çok farklı. Model
+"spekülatif hareket" yakalıyor; SPK bunların yalnızca bir kısmını cezalandırıyor ya da henüz
+cezalandırmadı. Dolayısıyla ilk 10 isabet oranı (%10) gerçek başarının **alt sınırı**.
+
+**3. Model hisse kimliğini ezberlemiyor.** Boş alarmların %57'si başka bir zamanda SPK vakası olan
+hisselerde; rastgele hisse-haftalarda da bu oran %55. Alarm, vakanın öncesine/sonrasına da eşit
+dağılıyor (%43 vs %42 "vaka alarmdan sonra"). SPK geçmişi denemesindeki (MEL-8) sorun ana modelde yok.
+
+**4. Elle inceleme: 30 dönemlik rastgele örnek** (SPK kaydı hiç olmayan hisseler, 2017–2024; sabit
+tohum). Her dönemin fiyat yolu ve KAP başlıkları tek tek okundu:
+
+| Tür | Dönem |
+|---|---|
+| Somut bir şirket olayı olmadan sert yükseliş, ardından ≥%35 düşüş (pompa-boşalt örüntüsüne benziyor) | 14 |
+| Somut şirket olayıyla açıklanabilir hareket (varlık satışı, geri alım, birleşme, sermaye artırımı, ihale/yeni iş) | 9 |
+| Yeni halka arz sonrası fiyat oluşumu | 3 |
+| Kalıcı yükseliş (yeniden değerleme / pandemi oynaklığı), çöküş yok | 3 |
+| Çok düşük halka açıklıklı büyük şirkette sığ hareket | 1 |
+| Veri hatası | 0 |
+
+Yaklaşık yarısı SPK kararı olmasa da manipülasyon vakalarına benzeyen örüntüde; ancak SPK kararı
+olmadan bunlara "manipülasyon" denemez. Kalanın büyük kısmı habere dayalı ya da yeni halka arz
+hareketi. Sınır: "özel durum açıklaması" başlıklı bildirimlerin içeriği okunmadı; sınıflandırma
+başlıklara ve fiyat yoluna dayanıyor.
+
+**Çıkarımlar.**
+- Habere dayalı hareketler boş alarmların önemli kısmı, ama KAP içerik göstergeleri modele daha önce
+  katkı vermemişti (tez sorusu 3). "Somut şirket olayı" oranı isabetlerde de benzer (%45 vs %42), yani
+  bu bilgi isabeti boş alarmdan ayırmıyor. Yeni bir KAP göstergesi denemesi bu yüzden öncelikli değil.
+- Yeni halka arzlar ayrı bir boş alarm kaynağı; ileride "halka arzdan beri geçen gün" etkisine bakılabilir.
+- SPK kararı olmayan pompa-boşalt benzeri dönemler, ileride kullanıcıyla birlikte yazılacak kendi
+  ölçütlerimizle etiketleme fikrini (MEL-10) destekliyor.
+
 ## Sağlamlık testleri (17.11.2026, Linear MEL-15)
 
 Tablolar: [saglamlik.md](saglamlik.md) (`scripts/robustness.py`). Dürüst skorlar, 2012–2026, 184 vaka.
