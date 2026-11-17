@@ -3,6 +3,34 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (17.11.2026): yükselişi bütün olarak izleyen göstergeler — kazanç yok (Linear MEL-13)
+
+Tanım sonuçlara bakılmadan sabitlendi ve Linear'a yazıldı. Yükselişin başı = son 60 işlem günündeki en
+düşük kapanış günü. Beş yeni gösterge eklendi: dipten beri geçen gün, dipten beri toplam halka açık
+devir, dipten beri günlük ortalama log getiri, dipten beri yükselen gün oranı, dipten beri tavan sayısı.
+Göstergeler yalnızca o güne kadarki veriyi kullanıyor (100 rastgele noktada veriyi keserek yeniden
+hesaplama: uyumsuzluk 0). Yalnız PU bagging bu göstergelerle aynı ayarlarla, dürüst yıllık eğitimle
+yeniden skorlandı; Kural + PU yeniden kuruldu (`scripts/exp_compare.py`). Deney kodu depoya alınmadı.
+
+Sonuçlar (2017–2026, 123 vaka, deney − ana, eşli bootstrap %95 GA):
+
+| Model | AUC | yakalama@20 | Karar |
+|---|---|---|---|
+| PU | −0,013 [−0,028, +0,000] | **−0,073** [−0,130, −0,016] | ✗ anlamlı kötüleşme |
+| Kural + PU | −0,005 [−0,013, +0,001] | −0,024 [−0,065, +0,016] | ✗ kazanç yok |
+
+Ana model 2017–2026: Kural + PU AUC 0,849 → 0,844, yakalama@20 0,67 → 0,63 (rastgele 0,23),
+isabet@10 0,100 → 0,091.
+
+**Yorum.**
+- Yükselişin boyu ve hızı zaten mevcut göstergelerde var: "3 aylık dipten yükseliş" (SHAP'ta 2. sıra)
+  ile yeni gösterge birleşimi neredeyse aynı bilgi (korelasyon 0,995). Haftalık devir hızı da yükseliş
+  boyunca devri büyük ölçüde yansıtıyor.
+- Yeni göstergeler aynı bilgiyi gürültülü biçimde tekrar ettiği için az etiketli PU modeli onlara
+  bölünüp daha kötü ayırıyor (MEL-12'deki "sade model daha iyi" bulgusuyla tutarlı).
+- Sonuç: yükseliş dönemini fiyat/hacimden yeniden tanımlamak yeni bilgi getirmiyor; kalan kazanç büyük
+  olasılıkla dışarıdan yeni bilgiden (içeriden satış, Borsa tedbirleri) veya daha çok etiketten gelecek.
+
 ## Deneme (17.11.2026): model paketi — yakın tarih ağırlığı, lambdarank, zamana dürüst ayar — kazanç yok (Linear MEL-12)
 
 Üç fikir PU bagging üzerinde denendi; ayarlar sonuçlara bakılmadan önce sabitlendi ve Linear'a
