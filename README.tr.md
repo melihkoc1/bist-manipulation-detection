@@ -191,6 +191,10 @@ python scripts/live_week.py --verify   # tüm parmak izlerini denetler
 python scripts/export_web.py --live    # sitede yalnız "Canlı test" sayfasını yeniler
 ```
 
+Yerel site "Canlı test" sayfasında kaydedilen listeleri de gösterir (hisse adları, kural göstergeleri,
+PU açıklaması). Sitenin herkese açık bir kopyası için `--live --no-lists` kullanın; yalnız parmak
+izleri yazılır.
+
 ## Tanıtım sitesi
 
 Projeyi göstermek için yerel bir web sitesi (React + TypeScript + Vite; Türkçe / İngilizce, açık / koyu

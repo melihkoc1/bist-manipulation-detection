@@ -199,6 +199,10 @@ python scripts/live_week.py --verify   # checks all fingerprints
 python scripts/export_web.py --live    # refreshes only the site's "Live test" page
 ```
 
+The local site also shows the recorded lists (stock names, rule indicators, PU explanation) on the
+"Live test" page. For any public copy of the site use `--live --no-lists`, which writes only the
+fingerprints.
+
 ## Demo site
 
 A local website for presenting the project (React + TypeScript + Vite; English / Turkish, light /

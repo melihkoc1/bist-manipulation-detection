@@ -279,7 +279,19 @@ def case_studies(cases: pd.DataFrame, decisions: pd.DataFrame) -> list[dict]:
     return out
 
 
-def export_live() -> None:
+def live_names() -> dict:
+    u = query("SELECT ticker, title FROM universe")
+    k = query("SELECT ticker, any_value(company) AS title FROM kap_disclosures WHERE ticker IS NOT NULL GROUP BY ticker")
+    return pd.concat([u, k]).dropna().drop_duplicates("ticker").set_index("ticker")["title"].to_dict()
+
+
+def shap_pick(con: np.ndarray, vals: np.ndarray) -> list:
+    order = np.argsort(con)
+    pick = [j for j in order[::-1][:SHAP_UP] if con[j] > 0] + [j for j in order[:SHAP_DOWN] if con[j] < 0]
+    return [[int(j), r(float(con[j]), 3), r(float(vals[j]))] for j in pick]
+
+
+def export_live(with_lists: bool = True) -> None:
     """Canlı test özeti (MEL-17): yalnız kayıt üst verisi ve parmak izleri; hisse adı yok."""
     import csv
     man_p, log_p = ROOT / "docs" / "canli_test" / "model.json", ROOT / "docs" / "canli_test" / "kayit.csv"
@@ -292,7 +304,17 @@ def export_live() -> None:
         f = ROOT / "data" / "live" / "weeks" / f"{r_['hafta_sonu']}_ilk20.csv"
         if f.exists():
             distinct |= {ln.split(",")[1] for ln in f.read_text(encoding="utf-8").splitlines()[1:] if ln}
+    lists, feats = {}, []
+    if with_lists:  # hisse adları içerir: yalnız yerel site için (web/public/data depoya girmez)
+        from live_week import week_details
+        names = live_names()
+        for r_ in rows:
+            feats, det = week_details(pd.Timestamp(r_["hafta_sonu"]))
+            lists[r_["hafta_sonu"]] = [
+                [d["ticker"], names.get(d["ticker"], ""), d["rank"], r(d["pct"], 4), [r(v) for v in d["rules"]],
+                 shap_pick(d["contrib"], d["values"])] for d in det]
     dump(OUT / "live.json", {
+        "lists": lists, "feats": feats,
         "frozen": man["dondurma_zamani_utc"][:10], "dataEnd": man["veri_son_gun"],
         "labelCutoff": man["etiket_kesimi_son_spk_karari"], "knownCases": man["bilinen_vaka"],
         "modelSha": man["model_sha256"], "codeCommit": man["kod_commit"],
@@ -305,7 +327,7 @@ def export_live() -> None:
 def main() -> None:
     if "--live" in sys.argv:  # yalnız canlı test özeti (tam dışa aktarım ~dakikalar sürer)
         OUT.mkdir(parents=True, exist_ok=True)
-        export_live()
+        export_live(with_lists="--no-lists" not in sys.argv)
         print("live.json yazıldı")
         return
     t0 = time.time()
