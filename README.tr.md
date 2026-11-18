@@ -40,10 +40,43 @@ Borsa İstanbul hisselerinde **pompala-boşalt** türü manipülasyon için bir 
   - ML modelleri anlamlı biçimde iyileşti (LightGBM AUC +0,05).
   - Bu, modellerin model kapasitesiyle değil, etiket sayısıyla sınırlı olduğunu doğruluyor.
 - **Daha eski yıllar.** 2012–2016 dahil (toplam 184 vaka), birleşik model vakaların %71'ini yakalıyor; rastgele seçimde bu oran %29.
+- **Sağlam.** Birleşik model her liste uzunluğunda rastgeleyi geçiyor (ilk 5'te 5,9×, ilk 20'de 2,9×).
+  - 15 yılın 12'sinde anlamlı; küçük, orta ve büyük şirketlerde benzer (2,5–2,7×).
+  - Zayıf noktalar belli: piyasa genelinde güçlü yükseliş yılları (2022) ve rastgele listenin de şansla yakaladığı uzun, yavaş manipülasyonlar.
+  - Ayrıntı: [docs/saglamlik.md](docs/saglamlik.md).
+- **Öğrenen model neye bakıyor?** SHAP açıklamalarına göre PU modeli en çok halka açık payların devir hızına (%21) ve 3 aylık dipten yükselişe (%13) bakıyor: "sert toparlanmadan sonra çok hızlı el değiştiren hisse".
+  - Kurallardan farklı bilgi kullanıyor; ikisinin birleşiminin iyi çalışmasının nedeni bu.
+  - Ayrıntı: [docs/aciklamalar.md](docs/aciklamalar.md).
+- **SPK kararı olmayan alarmlar da çoğunlukla olağan dışı.** SPK kararı hiç gelmemiş ilk 10 alarmlarında:
+  - %32'sinde sonradan Borsa, olağan dışı fiyat hareketi için açıklama istedi (rastgele hisselerde %5).
+  - %33'ü sonradan pompala-boşalt şekli gösteriyor (rastgele %5); hiçbiri veri hatası değil.
+  - Yani %10'luk ilk 10 isabeti bir alt sınır. Ayrıntı: [docs/bos_alarmlar.md](docs/bos_alarmlar.md).
+- **Canlı test sürüyor.** Model 17.11.2026'da donduruldu; her haftanın listesi artık sonucu kimse bilmeden kaydediliyor ve Haziran 2027'de yeni SPK kararlarıyla karşılaştırılacak (bkz. [Canlı test](#canlı-test-ileriye-dönük)).
 
 **Belgeler:**
 - Tüm tablolar: [docs/sonuclar_v2.md](docs/sonuclar_v2.md)
 - Yorum: [docs/yorum_v2.md](docs/yorum_v2.md)
+
+### Neler işe yaramadı?
+
+Her fikir aynı dürüst protokolle, ayarları sonuçlara bakılmadan sabitlenerek denendi. Olumsuz çıkan
+fikirlerin kodu depoya alınmadı; tüm sayılar [deneme günlüğünde](docs/deneme_gunlugu.md). Etkiler
+Kural + PU birleşimi için, 2017–2026.
+
+| Fikir | Sonuç |
+|---|---|
+| Şirket bildirimlerinden "habersiz hareket" göstergeleri | Anlamlı katkı yok (tez sorusu 3) |
+| Kapanış fiyatı oyunu (kapanış / ağırlıklı ortalama fiyat) göstergeleri | Anlamlı katkı yok |
+| Hissenin kendi SPK geçmişi | Zararlı (PU yakalama −11 puan): model hisseleri ezberliyor |
+| Birleşim ağırlıklarını geçmiş yıllardan öğrenmek | Kazanç yok (AUC +0,000) |
+| Yeni yıllara daha çok ağırlık; sıralama hedefi (lambdarank); ayarları geçmiş yıllarla seçmek | Kazanç yok; lambdarank anlamlı kötü (yakalama −5,7 puan) |
+| Yükselişi bütün olarak izleyen göstergeler (dipten beri gün, toplam devir, …) | Kazanç yok: mevcut göstergelerle aynı bilgi |
+| Yükseliş sırasında içeriden satış (KAP bildirimleri) | Kazanç yok: SPK vakalarında satış bildirimi rastgele günlerden bile *az* (%1,1 / %1,7) |
+| Ana set dışı vakalar (çok hisseli, pazar tedbiri) zayıf etiket olarak | Çok küçük AUC artışı (+0,003, sınırda) ama listenin üstü iyileşmedi; ana model değişmedi |
+
+**Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
+yeni bilgiden (aracı kurum düzeyinde "AKD" verisi, Borsa tedbirleri) veya daha çok pompala-boşalt
+etiketinden gelecek.
 
 ### Örnek: klasik bir pompala-boşalt (IZFAS, 2018)
 
@@ -137,8 +170,8 @@ SPK vakaları çoğu zaman yıllar sonra açıklar. Bunu dikkate almayan bir zam
 - **Değerlendirilebilen vakalar.** Yalnızca kararında manipülasyon dönemi yazan vakalar değerlendirilebiliyor: 413 ana vakanın 184'ü.
 - **Yavaş manipülasyonlar.** Yavaş ve sessiz manipülasyonlar ya da piyasa genelindeki bir yükselişe eşlik edenler günlük veride normal görünüyor.
   Bunları yakalamak için muhtemelen aracı kurum düzeyinde veri gerekiyor. Planlanan sonraki adım "AKD".
-- **Yanlış alarmlar.** İşaretlenen hisselerin çoğu SPK vakası değil.
-  - Bazıları SPK'nın hiç incelemediği manipülasyonlar olabilir, ama çoğu muhtemelen gerçek oynaklık.
+- **Yanlış alarmlar.** İlk 10 alarmlarının yaklaşık %90'ı SPK vakası değil.
+  - Bunların çoğu yine de olağan dışı hareket gösteriyor (yukarıya bakın), ama SPK kararı olmadan manipülasyon denemez.
   - Sistem bir hüküm aracı değil, önceliklendirme aracıdır.
 - **Eşleşmeyen eski şirketler.** İlk bültenlerdeki, borsadan çıkmış bazı şirketler fiyat verisiyle eşlenemedi.
 
@@ -212,7 +245,7 @@ cd web && npm install && npm run dev            # http://localhost:5173 açılı
 | **Hisse detayı** | Fiyat, hacim ve haftalık sıra (3 panel); SPK dönemleri, SPK kararları ve ilk alarm işaretli. Seçilen hafta için "Neden şüpheli?", SPK karar zaman çizelgesi ve KAP bildirimleri. |
 | **Vaka çalışmaları** | 3 yakalanan, 2 kaçırılan vaka; olay sırası ve dersler. |
 | **Sonuçlar** | Dönem seçici, model karşılaştırması, SPK'ya göre zaman, tez soruları ve deneme günlüğü. |
-| **Canlı test · Yöntem · Hakkında** | İleriye dönük test planı, yöntem ve etik ilkeler, proje bilgisi. |
+| **Canlı test · Yöntem · Hakkında** | Süren ileriye dönük test (kayıt zamanları ve parmak izleri; yerelde haftanın listesi), yöntem ve etik ilkeler, proje bilgisi. |
 
 Site yalnızca `localhost` üzerinden açılır; gerçek haftalık listeler internete yayımlanmaz. Tasarım
 dosyaları `design/` klasöründedir. Önceki Streamlit uygulaması (`app/`) da hâlâ çalışır:
@@ -232,7 +265,8 @@ web/          tanıtım sitesi (React + TypeScript), veri: scripts/export_web.py
 app/          önceki Streamlit tanıtım uygulaması
 design/       tanıtım sitesinin onaylanmış tasarım dosyaları
 tests/        68 birim testi (veri gerektirmez), özellikler için geleceği görme testleri dahil
-docs/         sonuçlar, yorum, doğrulama, vaka çalışmaları
+docs/         sonuçlar, yorum, doğrulama, vaka çalışmaları, deneme günlüğü
+  canli_test/ canlı test: donmuş model manifesti, önceden yazılmış protokol, haftalık parmak izleri
 ```
 
 ## Veri kaynakları

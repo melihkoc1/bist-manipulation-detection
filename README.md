@@ -41,9 +41,44 @@ available before that year:
   which confirms they were limited by the number of labels, not by model capacity.
 - **Older years.** Including 2012–2016 (184 cases in total), the ensemble catches 71% of cases,
   against 29% for random.
+- **Robust.** The ensemble beats random at every list length (5.9× in the top 5, 2.9× in the top
+  20), in 12 of 15 years, and equally for small, mid and large companies (2.5–2.7×). Its weak
+  spots are clear: strong market-wide rallies (2022) and long, slow manipulations, which even a
+  random list catches by luck. Details: [docs/saglamlik.md](docs/saglamlik.md).
+- **What the learned model looks at.** SHAP explanations show the PU model relies most on
+  free-float turnover (21%) and the rise from the 3-month low (13%), i.e. "shares changing hands
+  very fast after a sharp rebound". It uses different information than the rules, which is why
+  the two combine well. Details: [docs/aciklamalar.md](docs/aciklamalar.md).
+- **Alarms without an SPK decision are mostly unusual too.** Among top-10 alarms that never got an
+  SPK decision, 32% later received an exchange request to explain unusual price moves (random
+  stocks: 5%) and 33% show a later pump-and-dump shape (random: 5%); none were data errors. The
+  10% top-10 precision is therefore a lower bound. Details: [docs/bos_alarmlar.md](docs/bos_alarmlar.md).
+- **Live test running.** The model was frozen on 2026-11-17 and every week's list is now recorded
+  before anyone knows the outcome; it will be checked against new SPK decisions in June 2027
+  (see [Live test](#live-test-prospective)).
 
 Full tables: [docs/sonuclar_v2.md](docs/sonuclar_v2.md) · interpretation: [docs/yorum_v2.md](docs/yorum_v2.md)
 (both in Turkish).
+
+### What did not help
+
+Every idea was tested with the same honest protocol, with settings fixed before looking at the
+results. Code for failed ideas was not kept; all numbers are in the
+[experiment log](docs/deneme_gunlugu.md) (Turkish). Effects are on the Rules + PU ensemble, 2017–2026.
+
+| Idea | Result |
+|---|---|
+| "Price moves without news" features from company disclosures | No significant gain (thesis question 3) |
+| Closing-price manipulation (close vs VWAP) features | No significant gain |
+| The stock's own SPK history | Harmful (PU recall −11 points): the model memorizes stocks |
+| Learning ensemble weights from past years | No gain (AUC +0.000) |
+| More weight on recent years; ranking objective (lambdarank); tuning on past years | No gain; lambdarank significantly worse (recall −5.7 points) |
+| Indicators tracking the whole run-up (days since low, cumulative turnover, …) | No gain: same information as existing features |
+| Insider selling during the run-up (KAP filings) | No gain: SPK cases have *fewer* sell filings than random days (1.1% vs 1.7%) |
+| Non-core cases (multi-stock, market measures) as weak labels | Tiny AUC gain (+0.003, borderline) but no better top of the list; main model unchanged |
+
+**Takeaway:** with daily price and volume data the model is near its limit. Further gains most
+likely need new information (broker-level "AKD" data, exchange measures) or more pump-and-dump labels.
 
 ### Example: a textbook pump-and-dump (IZFAS, 2018)
 
@@ -142,8 +177,9 @@ retracted and the whole evaluation was rebuilt. The retracted analysis is kept i
 - **Slow manipulations are missed.** Slow, quiet manipulations, or ones riding a market-wide
   rally, look normal in daily data. Catching them likely needs broker-level data
   ("AKD", the next planned step).
-- **False alarms.** Many flagged stocks are not SPK cases. Some may be manipulation SPK never
-  pursued, but most are probably genuine volatility. The system is a triage tool, not a verdict.
+- **False alarms.** About 90% of top-10 alarms are not SPK cases. Most of them still show unusual
+  behaviour (see above), but without a regulator decision they cannot be called manipulation.
+  The system is a triage tool, not a verdict.
 - **Delisted companies.** Some delisted companies from early bulletins could not be matched
   to price data.
 
@@ -220,7 +256,7 @@ cd web && npm install && npm run dev            # opens http://localhost:5173
 | **Stock detail** | Price, volume and weekly rank (3 panels) with SPK periods, SPK decisions and the first alarm marked; "why suspicious?" for a chosen week; SPK decision timeline; KAP disclosures. |
 | **Case studies** | 3 caught and 2 missed cases, with the sequence of events and lessons. |
 | **Results** | Period selector, model comparison, timing vs the regulator, thesis answers, experiment log. |
-| **Live test · Method · About** | Prospective test plan, method and ethics, project info. |
+| **Live test · Method · About** | Running prospective test (record times and fingerprints; locally, each week's list), method and ethics, project info. |
 
 The site listens on `localhost` only; real weekly lists are never published online. Design files
 are in `design/`. The earlier Streamlit app (`app/`) still works:
@@ -240,7 +276,8 @@ web/          demo site (React + TypeScript), data from scripts/export_web.py
 app/          earlier Streamlit demo app
 design/       approved design files for the demo site
 tests/        68 unit tests (no data needed), incl. look-ahead tests for features
-docs/         results, interpretation, validation, case studies (Turkish)
+docs/         results, interpretation, validation, case studies, experiment log (Turkish)
+  canli_test/ live test: frozen-model manifest, pre-registered protocol, weekly fingerprints
 ```
 
 ## Data sources
