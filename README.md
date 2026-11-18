@@ -199,9 +199,8 @@ python scripts/live_week.py --verify   # checks all fingerprints
 python scripts/export_web.py --live    # refreshes only the site's "Live test" page
 ```
 
-The local site also shows the recorded lists (stock names, rule indicators, PU explanation) on the
-"Live test" page. For any public copy of the site use `--live --no-lists`, which writes only the
-fingerprints.
+On the local site, clicking a week in the "Live test" log opens that week's recorded top-20 CSV in a
+new tab. For any public copy of the site use `--live --no-lists` (fingerprints only).
 
 ## Demo site
 

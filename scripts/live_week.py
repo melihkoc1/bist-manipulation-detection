@@ -26,7 +26,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -122,38 +121,6 @@ def verify() -> None:
     model_ok = sha256_bytes(MODEL_PATH.read_bytes()) == json.loads(MANIFEST.read_text(encoding="utf-8"))["model_sha256"]
     print(f"model: {'tamam' if model_ok else 'UYUŞMUYOR'}; {len(rows)} hafta, {bad} sorun")
     sys.exit(1 if bad or not model_ok else 0)
-
-
-def week_details(week_end: pd.Timestamp) -> tuple[list[str], list[dict]]:
-    """Site için (yalnız yerel): kayıtlı ilk 20'nin kural göstergeleri ve donmuş PU'nun SHAP katkıları.
-    Kayıtlı ilk 20 dosyası esas alınır; göstergeler haftanın (veya sonraki ilk) fiyat anlık görüntüsünden
-    yeniden hesaplanır. Kayıtları değiştirmez."""
-    tag = f"{week_end:%Y-%m-%d}"
-    top = pd.read_csv(LIVE / "weeks" / f"{tag}_ilk20.csv")
-    full = pd.read_parquet(LIVE / "weeks" / f"{tag}.parquet").set_index("ticker")
-    snaps = sorted(p for p in (LIVE / "prices").glob("*.parquet") if p.stem >= tag)
-    prices = pd.read_parquet(snaps[0])
-    prices = prices[prices["date"].between(week_end - HISTORY, week_end) & prices["close"].notna()]
-    prices = prices[prices["ticker"].isin(top["hisse"])]
-    feats = price_features.build(prices)
-    X = feats[feats["date"].between(week_end - pd.Timedelta(days=6), week_end)].reset_index(drop=True)
-    with open(MODEL_PATH, "rb") as fh:
-        pu = pickle.load(fh)
-    X["_rule"] = RuleScore().score(X).to_numpy()
-    X["_pu"] = pu.score(X)
-    rules = list(RuleScore.RULES)
-    out = []
-    for _, r in top.iterrows():
-        g = X[X["ticker"] == r["hisse"]]
-        if g.empty:
-            continue
-        rd = g.sort_values(["_rule", "date"], ascending=[False, False]).iloc[0]
-        pdx = g.sort_values(["_pu", "date"], ascending=[False, False]).iloc[[0]]
-        con = np.mean([m.booster_.predict(pdx[pu.cols], pred_contrib=True) for m in pu.models], axis=0)[0, :-1]
-        out.append({"ticker": r["hisse"], "rank": int(r["sira"]), "pct": float(full.loc[r["hisse"], "pct"]),
-                    "rules": [None if pd.isna(rd[c]) else float(rd[c]) for c in rules],
-                    "contrib": con, "values": pdx[pu.cols].to_numpy()[0]})
-    return pu.cols, out
 
 
 def main() -> None:

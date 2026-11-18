@@ -1,82 +1,16 @@
 import { useT } from "../i18n";
 import { GITHUB, Page } from "../components/Layout";
 import { CalClock, Clock, Github } from "../components/Icons";
-import { Fragment, useState } from "react";
-import { Link } from "react-router-dom";
-import { useIndex, useJson, type RuleVals, type Shap } from "../data";
-import { ReasonChips, ShapPanel, WhyPanel } from "../components/ui";
+import { useJson } from "../data";
 
-/** İleriye dönük canlı test (Linear MEL-17). Veri: scripts/export_web.py → live.json.
- *  `lists` yalnız yerel dışa aktarımda dolar (hisse adları içerir; web/public/data depoya girmez,
- *  herkese açık bir kopya için `export_web.py --live --no-lists`). */
+/** İleriye dönük canlı test (Linear MEL-17). Veri: scripts/export_web.py → live.json (hisse adı içermez) ve yalnız yerelde data/live/<hafta>_ilk20.csv (hafta bağlantıları, LiveList sayfası). */
 interface Live {
   frozen: string; dataEnd: string; labelCutoff: string; knownCases: number;
   modelSha: string; codeCommit: string; distinct: number;
+  /** true: ilk 20 CSV dosyaları yerel site verisinde var (data/live/<hafta>_ilk20.csv) */
+  csv?: boolean;
   /** [hafta sonu, kayıt zamanı (UTC), gecikmeli, skorlanan hisse, ilk 20 sha256] */
   weeks: [string, string, number, number, string][];
-  /** hafta sonu → [hisse, şirket, sıra, yüzdelik, kural göstergeleri, PU SHAP] */
-  lists?: Record<string, [string, string, number, number, RuleVals, Shap][]>;
-  feats?: string[];
-}
-
-function LiveLists({ data }: { data: Live }) {
-  const f = useT();
-  const { data: idx } = useIndex();
-  const weeks = Object.keys(data.lists ?? {}).sort();
-  const [week, setWeek] = useState(weeks[weeks.length - 1]);
-  const [open, setOpen] = useState<string | null>(null);
-  if (!weeks.length || !idx) return null;
-  const rows = data.lists![week] ?? [];
-  return (
-    <section className="card" aria-labelledby="ll-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <span className="badge b-amber" style={{ alignSelf: "flex-start" }}>{f.L("Yalnız bu bilgisayarda", "Only on this computer")}</span>
-        <h2 id="ll-h" style={{ fontSize: 18, fontWeight: 600 }}>{f.L("Kaydedilen listeler", "Recorded lists")}</h2>
-        <p style={{ fontSize: 13, lineHeight: 1.55 }} className="muted">{f.L(
-          "Donmuş modelin o hafta en üste koyduğu 20 hisse. Bu bölüm yerel veriden oluşur, yayımlanmaz. Listedeki bir hisse manipülasyon kanıtı değildir; olağan dışı fiyat ve hacim hareketi gösterir. Sonuç Haziran 2027'de SPK kararlarıyla ölçülecek.",
-          "The 20 stocks the frozen model ranked highest that week. This section is built from local data and is not published. A listed stock is not evidence of manipulation; it shows unusual price and volume behaviour. The outcome will be measured against SPK decisions in June 2027.")}</p>
-      </div>
-      <div className="seg" role="group" aria-label={f.L("Hafta seç", "Choose week")} style={{ alignSelf: "flex-start", flexWrap: "wrap" }}>
-        {weeks.map((w) => <button key={w} type="button" className={w === week ? "on" : ""} aria-pressed={w === week} onClick={() => { setWeek(w); setOpen(null); }}>{w}</button>)}
-      </div>
-      <div className="tbl-wrap">
-        <table className="t">
-          <thead><tr><th className="num">{f.L("Sıra", "Rank")}</th><th>{f.L("Hisse", "Stock")}</th><th>{f.L("Öne çıkan", "Highlights")}</th></tr></thead>
-          <tbody>
-            {rows.map(([t, name, rank, , vals, shap]) => (
-              <Fragment key={t}>
-                <tr>
-                  <td className="num">{rank}</td>
-                  <td>
-                    <button type="button" className="rowbtn" aria-expanded={open === t} onClick={() => setOpen(open === t ? null : t)}>
-                      <strong>{t}</strong> <span className="muted" style={{ fontSize: 13 }}>{name}</span>
-                    </button>
-                  </td>
-                  <td><div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}><ReasonChips vals={vals} thr={idx.rules} /></div></td>
-                </tr>
-                {open === t && (
-                  <tr>
-                    <td colSpan={3} style={{ background: "var(--surface-2)" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, padding: "8px 4px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <strong style={{ fontSize: 14 }}>{f.L("Kural göstergeleri", "Rule indicators")}</strong>
-                          <WhyPanel vals={vals} thr={idx.rules} compact />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <ShapPanel shap={shap} feats={data.feats} compact />
-                          <Link to={`/hisse/${t}`} className="btn sm" style={{ alignSelf: "flex-start" }}>{f.L("Geçmişini gör (16.10.2026'ya kadar)", "See its history (to 16 Oct 2026)")}</Link>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
 }
 
 const TARGET_END = "2027-05-28"; // Haziran 2027 değerlendirmesinden önceki son cuma
@@ -137,8 +71,6 @@ export default function LiveTest() {
         <div className="card" style={card}><p style={{ fontSize: 14, fontWeight: 500 }} className="muted">{f.L("Sonradan SPK kararı gelen", "Later got an SPK decision")}</p><strong style={{ ...big, color: "var(--faint)" }}>—</strong><p style={{ fontSize: 13 }} className="faint">{f.L("Haziran 2027'de hesaplanacak · rastgele beklenti de o zaman", "computed in June 2027, with the random expectation")}</p></div>
       </section>
 
-      {data?.lists && <LiveLists data={data} />}
-
       <section className="card" aria-labelledby="log-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <h2 id="log-h" style={{ fontSize: 18, fontWeight: 600 }}>{f.L("Haftalık kayıt", "Weekly log")}</h2>
@@ -152,7 +84,9 @@ export default function LiveTest() {
                 <tbody>
                   {[...rows].reverse().map(([w, rec, late, n, sha]) => (
                     <tr key={w}>
-                      <td>{w}{late ? <span className="badge b-amber" style={{ marginLeft: 8 }} title={f.L("Hafta kapandıktan 3 günden sonra kaydedildi", "Recorded more than 3 days after the week closed")}>{f.L("gecikmeli", "late")}</span> : null}</td>
+                      <td>{data?.csv
+                        ? <a href={`/canli-test/liste/${w}`} target="_blank" rel="noreferrer" title={f.L("Listeyi yeni sekmede aç (yalnız bu bilgisayarda)", "Open the list in a new tab (this computer only)")}>{w}</a>
+                        : w}{late ? <span className="badge b-amber" style={{ marginLeft: 8 }} title={f.L("Hafta kapandıktan 3 günden sonra kaydedildi", "Recorded more than 3 days after the week closed")}>{f.L("gecikmeli", "late")}</span> : null}</td>
                       <td className="muted">{rec.replace("T", " ").slice(0, 16)}</td>
                       <td className="num">{n}</td>
                       <td><code title={sha} style={{ fontSize: 12 }}>{sha.slice(0, 16)}…</code></td>

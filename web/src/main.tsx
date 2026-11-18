@@ -15,6 +15,7 @@ import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
 import Results from "./pages/Results";
 import LiveTest from "./pages/LiveTest";
+import LiveList from "./pages/LiveList";
 import Method from "./pages/Method";
 import About from "./pages/About";
 
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")!).render(
     <I18nProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="canli-test/liste/:week" element={<LiveList />} />
           <Route element={<Layout />}>
             <Route index element={<Overview />} />
             <Route path="zaman-makinesi" element={<TimeMachine />} />

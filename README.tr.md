@@ -191,9 +191,8 @@ python scripts/live_week.py --verify   # tüm parmak izlerini denetler
 python scripts/export_web.py --live    # sitede yalnız "Canlı test" sayfasını yeniler
 ```
 
-Yerel site "Canlı test" sayfasında kaydedilen listeleri de gösterir (hisse adları, kural göstergeleri,
-PU açıklaması). Sitenin herkese açık bir kopyası için `--live --no-lists` kullanın; yalnız parmak
-izleri yazılır.
+Yerel sitede "Canlı test" kaydındaki bir haftaya tıklamak, o haftanın kaydedilmiş ilk 20 CSV dosyasını
+yeni sekmede açar. Sitenin herkese açık bir kopyası için `--live --no-lists` kullanın (yalnız parmak izleri).
 
 ## Tanıtım sitesi
 
