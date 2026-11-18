@@ -3,6 +3,38 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (18.11.2026): ana set dışı vakalar zayıf etiket olarak — küçük AUC artışı, ana model değişmedi (Linear MEL-10)
+
+**Veri.** Fiyatı olan 513 vakanın 111'i ana set dışında: 100 çok hisseli karar (61'i 2025, 8'i 2026'da
+açıklandı) ve 11 "3. seviye" pazar tedbiri (2014–2019). Bu vakaların günleri şimdiye kadar eğitimde ve
+değerlendirmede dışarıda bırakılıyordu.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı): yalnız eğitimde, Y yılı modeli için
+Y−1 sonuna kadar açıklanmış ana set dışı vakaların günleri (bilinen dönem veya 6 aylık pencere)
+pozitif sayıldı. 2026 modelinde pozitif gün 34.315 → 45.626. Değerlendirme değişmedi (aynı 123 vaka).
+Karar kuralı: Kural + PU'da AUC veya yakalama@20'de anlamlı artış varsa benimse.
+
+**Sonuç** (2017–2026, deney − ana, eşli bootstrap):
+
+| Model | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| PU | **+0,007** [+0,002, +0,013] | −0,016 [−0,057, +0,024] | 0,102 → 0,105 |
+| Kural + PU | **+0,003** [+0,0002, +0,007] | −0,008 [−0,024, +0,000] | 0,100 → 0,097 |
+
+Kural + PU AUC'si 0,849 → 0,853. 123 vakanın 72'sinde vaka içi AUC arttı, 51'inde azaldı.
+
+**Karar: ana model değişmedi** (kullanıcıyla birlikte, 18.11.2026). Önceden yazılan kurala göre AUC
+artışı "anlamlı" sayılıyor; bu sapma bilerek yapıldı ve gerekçesi:
+- Artış çok küçük ve güven aralığının alt sınırı sıfıra çok yakın (+0,0002).
+- Uygulamada önemli olan ölçüler (ilk 20'de yakalama, ilk 10 isabeti) artmadı, hafifçe düştü.
+- Canlı test için model 17.11.2026'da donduruldu; ana modeli değiştirmek geriye dönük sonuçlarla
+  canlı testi birbirinden koparırdı.
+
+**Yorum.** Daha çok etiket yönü doğru: PU'nun sıralama başarısı anlamlı arttı. Ama bu vakalar
+çoğunlukla emir bazlı (çok hisseli) işlemler; pompala-boşalt örüntüsüne tam uymadıkları için üst
+sıraları iyileştirmiyorlar. Gerçek kazanç, pompala-boşalt türünden yeni etiketlerden gelebilir
+(ör. kendi kriterlerimizle tanımlanacak örüntü etiketleri, ileride).
+
 ## Deneme (17.11.2026): yükseliş sırasında içeriden satış — kazanç yok (Linear MEL-9)
 
 **Veri durumu.** KAP üst verisinde 18.617 "Pay Alım Satım Bildirimi" var (376 hisse). Yön (alış/satış)
