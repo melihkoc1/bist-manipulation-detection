@@ -3,6 +3,49 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (19.11.2026): fiyat ile temel değerin kopması (PD/DD, kâr verimi) — zararlı (Linear MEL-18)
+
+**Veri.** İş Yatırım mali tablo servisinden çeyreklik özkaynak ve dönem kârı, 2009 → 2026. Sanayi
+şirketleri için XI_29 tablosu (ana ortaklığa ait özkaynak, dönem kârı), bankalar için UFRS tablosu.
+Fiyat verisindeki 863 hissenin 631'inde tablo bulundu; kalanların çoğu fiyat geçmişi boş ya da
+yatırım ortaklığı / aracı kurum gibi tablosu farklı şirketler. Vakaların %94'ünde (411 vakanın 385'i) tablo var.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Bilinme tarihi sabit ve ihtiyatlı (yasal sürelerin üzerinde): 1. ve 3. çeyrek dönem sonu +60 gün,
+  6 ay +75, yıllık +100. KAP yayın tarihi eşleştirmesi bilerek kullanılmadı (yanlış eşleşme sızıntı yaratabilir).
+- Birincil set A: `log_pb` (log piyasa değeri / özkaynak), `neg_equity`, `pb_dev_250` (log_pb'nin
+  hissenin son 250 işlem günü medyanından sapması: asıl "temelden kopma" göstergesi), `ey_ttm`
+  (son 12 ay net kâr / piyasa değeri).
+- Sağlamlık seti B: A'dan `log_pb` çıkarılır (hisseye özgü kalıcı seviye, ezber riski).
+- Karar kuralı aynı: Kural + PU'da AUC veya yakalama@20'de anlamlı artış.
+
+**Betimsel kontrol** (2012+, 411 vaka). Getirisi en yüksek %5'lik günler kendi içinde:
+
+| | PD/DD medyanı | `pb_dev_250` > 0,5 | Zararda (son 12 ay) |
+|---|---|---|---|
+| SPK vaka günleri | 6,5 | %65 | %29 |
+| Vaka olmayan günler | 4,8 | %57 | %28 |
+
+Vaka günleri, benzer yükselişteki diğer günlerden daha pahalı ve temelden daha kopuk görünüyordu;
+bu umut verici bir işaretti.
+
+**Sonuç** (2017–2026, deney − ana, eşli bootstrap):
+
+| Set | Model | AUC | yakalama@20 |
+|---|---|---|---|
+| A | PU | **−0,030** [−0,055, −0,004] | **−0,106** [−0,187, −0,016] |
+| A | Kural + PU | −0,013 [−0,027, +0,000] | **−0,057** [−0,114, −0,008] |
+| B | PU | **−0,024** [−0,045, −0,002] | **−0,114** [−0,195, −0,041] |
+| B | Kural + PU | −0,010 [−0,022, +0,000] | −0,024 [−0,081, +0,033] |
+
+Kalın: anlamlı. İlk 10 isabeti A'da 0,100 → 0,097, B'de 0,100 → 0,096.
+
+**Karar: eklenmedi.** Betimsel fark gerçek ama model bunu genelleyemiyor. Yorum: PD/DD ve kâr verimi
+yavaş değişen, hisseye özgü özellikler. Model, geçmiş vakaların "ne tür şirket" olduğunu (küçük,
+pahalı, zararlı) öğreniyor; yeni yıllarda bu şirketler değişince işe yaramıyor. Şirket profili ve SPK
+geçmişi denemelerindeki ezber sorununun aynısı; seviye göstergesi (`log_pb`) çıkarılınca da sürüyor,
+çünkü `ey_ttm` ve `neg_equity` de hisseye özgü. Kod depoya alınmadı.
+
 ## Deneme (19.11.2026): Borsa İstanbul VBTS tedbirleri gösterge olarak — kazanç yok (Linear MEL-11)
 
 **Veri.** KAP'ta düzenleyici kurum (DDK) bildirimleri 2010-01 → 2026-11 indirildi (217.411 bildirim).
