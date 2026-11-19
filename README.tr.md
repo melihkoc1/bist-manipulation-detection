@@ -73,9 +73,10 @@ Kural + PU birleşimi için, 2017–2026.
 | Yükselişi bütün olarak izleyen göstergeler (dipten beri gün, toplam devir, …) | Kazanç yok: mevcut göstergelerle aynı bilgi |
 | Yükseliş sırasında içeriden satış (KAP bildirimleri) | Kazanç yok: SPK vakalarında satış bildirimi rastgele günlerden bile *az* (%1,1 / %1,7) |
 | Ana set dışı vakalar (çok hisseli, pazar tedbiri) zayıf etiket olarak | Çok küçük AUC artışı (+0,003, sınırda) ama listenin üstü iyileşmedi; ana model değişmedi |
+| Borsa İstanbul VBTS tedbirleri (açığa satış yasağı, brüt takas, tek fiyat) | Kazanç yok (AUC −0,001): tedbir, modelin zaten gördüğü fiyat oynaklığını izliyor |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
-yeni bilgiden (aracı kurum düzeyinde "AKD" verisi, Borsa tedbirleri) veya daha çok pompala-boşalt
+yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt
 etiketinden gelecek.
 
 ### Örnek: klasik bir pompala-boşalt (IZFAS, 2018)

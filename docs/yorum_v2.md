@@ -3,6 +3,49 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (19.11.2026): Borsa İstanbul VBTS tedbirleri gösterge olarak — kazanç yok (Linear MEL-11)
+
+**Veri.** KAP'ta düzenleyici kurum (DDK) bildirimleri 2010-01 → 2026-11 indirildi (217.411 bildirim).
+Volatilite Bazlı Tedbir Sistemi (VBTS) duyurularının 2.633'ünün metni tek tek indirildi; hisse kodu ve
+tarihler yalnız metinde. 2.624'ü ayrıştırıldı: 563 hissede 4.347 tedbir aralığı (2017-10 → 2026-11).
+Seviye: 1 açığa satış / kredili işlem yasağı (2.437), 2 brüt takas (1.067), 3 emir paketi veya tek
+fiyat (843).
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Yalnız gösterge olarak üç değişken: `vbts_level` (o gün yürürlükteki en ağır tedbir), `vbts_active`,
+  `vbts_new_20` (son 20 işlem gününde başlayan tedbir sayısı).
+- Tedbir, duyurunun bilinme gününden (18:00 sonrası yayın → ertesi işlem günü) önce kullanılmadı.
+- Hissenin uzun dönem tedbir geçmişi bilerek kullanılmadı (SPK geçmişi denemesindeki ezber sorunu).
+- SPK tedbir kararları kullanılmadı (vakaların kendisi, sızıntı); yakın izleme ve şirket uyarıları
+  finansal durumla ilgili olduğu için dışarıda bırakıldı.
+- Karar kuralı aynı: Kural + PU'da AUC veya yakalama@20'de anlamlı artış.
+
+**Betimsel kontrol** (2018+, 320 vaka, 27.764 vaka günü):
+
+| | Aktif tedbir | Seviye ≥ 2 | Seviye 3 |
+|---|---|---|---|
+| SPK vaka günleri | %9,6 | %5,1 | %3,3 |
+| Diğer günler | %5,7 | %2,4 | %1,2 |
+
+Vakaların %35'inin penceresinde en az bir gün tedbir var. Ancak 60 günlük getirisi en yüksek %5'lik
+günler kendi içinde karşılaştırılınca fark kayboluyor: aktif tedbir vaka günlerinde %26,5, vaka
+olmayanlarda %28,3. Tedbir, sert fiyat hareketinin bir yansıması; model bu hareketi zaten görüyor.
+
+**Sonuç** (deney − ana, eşli bootstrap):
+
+| Model | Dönem | AUC | yakalama@20 |
+|---|---|---|---|
+| PU | 2017–2026 | −0,001 [−0,002, +0,001] | −0,016 [−0,049, +0,016] |
+| Kural + PU | 2017–2026 | −0,001 [−0,002, +0,000] | +0,000 |
+| Kural + PU | 2018–2026 (115 vaka) | −0,001 [−0,002, +0,000] | +0,000 |
+
+Kural + PU AUC'si 0,849 (değişmedi), ilk 10 isabeti 0,100 → 0,099.
+
+**Karar: eklenmedi.** Borsa'nın tedbiri, modelin fiyat ve devir göstergelerinden zaten çıkardığı
+oynaklığı özetliyor; yeni bilgi taşımıyor. Kod depoya alınmadı. Yeniden üretmek için: KAP
+`byCriteria` sorgusunda `memberType: "DDK"`, bildirim sayfalarından "İlgili Şirketler" ve Türkçe
+tedbir cümlesi ("... payları gg/aa/yyyy tarihli işlemlerden ... gg/aa/yyyy tarihli işlemlere kadar ...").
+
 ## Deneme (18.11.2026): ana set dışı vakalar zayıf etiket olarak — küçük AUC artışı, ana model değişmedi (Linear MEL-10)
 
 **Veri.** Fiyatı olan 513 vakanın 111'i ana set dışında: 100 çok hisseli karar (61'i 2025, 8'i 2026'da

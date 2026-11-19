@@ -76,9 +76,10 @@ results. Code for failed ideas was not kept; all numbers are in the
 | Indicators tracking the whole run-up (days since low, cumulative turnover, …) | No gain: same information as existing features |
 | Insider selling during the run-up (KAP filings) | No gain: SPK cases have *fewer* sell filings than random days (1.1% vs 1.7%) |
 | Non-core cases (multi-stock, market measures) as weak labels | Tiny AUC gain (+0.003, borderline) but no better top of the list; main model unchanged |
+| Borsa Istanbul volatility measures (VBTS: short-sale ban, gross settlement, single price) | No gain (AUC −0.001): the measures follow price volatility the model already sees |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
-likely need new information (broker-level "AKD" data, exchange measures) or more pump-and-dump labels.
+likely need new information (broker-level "AKD" data) or more pump-and-dump labels.
 
 ### Example: a textbook pump-and-dump (IZFAS, 2018)
 
