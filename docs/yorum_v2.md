@@ -31,6 +31,27 @@ Eksikler eğitim medyanıyla doldurulur. Ayarlar süre nedeniyle küçük tutuld
 - Karar (önceden yazılan kurala göre): ana model değişmedi. RF ve ET PU modelleri karşılaştırma için
   depoda kaldı (`3f_pu_rf`, `3g_pu_et`).
 
+**Takip: üçlü birleşim** (kullanıcı onayıyla, tasarım sonuçtan önce Linear'a yazıldı): Kural + PU-LightGBM
++ PU-RF, ana modeldeki gibi eşit ağırlıklı haftalık yüzdelik ortalaması; yeni eğitim yok. RF, ET yerine
+yukarıdaki sonuçlara bakılarak seçildi (birleşimde daha iyi göründüğü için); bu seçim bir serbestlik
+derecesi olarak not edilmeli.
+
+| 2017–2026, 123 vaka | Ana model | Üçlü birleşim |
+|---|---|---|
+| AUC | 0,849 | **0,856** (+0,006 [+0,002, +0,011]) |
+| yakalama@20 | 0,672 | 0,656 (−0,016 [−0,041, +0,000]) |
+| İlk 10 isabeti | 0,100 | 0,104 |
+| 2012–2026 AUC | 0,806 | 0,827 |
+
+**Karar: ana model değişmedi** (kullanıcıyla birlikte, 25.11.2026). MEL-10'daki kararla aynı gerekçe:
+- AUC artışı anlamlı ama küçük.
+- Listenin üstü iyileşmedi: yakalama hafif düştü, ilk 10 isabeti hafif arttı, ikisi de anlamsız.
+- RF seçimi sonuçlara bakılarak yapıldı.
+- Canlı test Kural + PU ile donduruldu.
+
+Tez için: "Birden çok PU modelini birleştirmek genel sıralamayı iyileştiriyor, ama inceleme listesinin
+üstünü değiştirmiyor."
+
 ## Deneme (25.11.2026): farklı PU yöntemleri — Elkan–Noto eşdeğer, nnPU daha kötü (Linear MEL-82)
 
 **Soru.** Ana modeldeki PU bagging (Mordelet & Vert 2014) yerine başka bir PU yöntemi daha iyi olur mu?

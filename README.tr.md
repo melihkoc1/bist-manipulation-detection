@@ -78,6 +78,7 @@ Kural + PU birleşimi için, 2017–2026.
 | Ağaç modelleri yerine lojistik regresyon (taban) | AUC neredeyse aynı; ilk 20'de 3–7 puan daha düşük yakalama (anlamsız): sinyalin çoğu doğrusal |
 | Farklı PU yöntemleri (Elkan–Noto, nnPU) | Elkan–Noto PU bagging ile aynı; nnPU daha kötü (AUC −0,015, anlamlı): PU'nun türü ikincil |
 | PU içinde LightGBM yerine Random Forest / Extra Trees | PU tek başına AUC +0,02 (anlamlı), ama listenin üstü ve kurallarla birleşim değişmedi |
+| Üçlü birleşim (Kural + PU-LightGBM + PU-Random Forest) | AUC 0,849 → 0,856 (anlamlı, küçük) ama ilk 20'de yakalama artmadı; ana model değişmedi |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
 yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt
