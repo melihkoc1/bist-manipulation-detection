@@ -3,6 +3,34 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): PU içinde Random Forest / Extra Trees — PU'nun AUC'si arttı, ana model değişmedi (Linear MEL-83)
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı): PU bagging kurgusu aynı (15 torba,
+20 kat etiketsiz); taban öğrenici LightGBM yerine
+- `3f_pu_rf`: Random Forest, torba başına 10 ağaç, min_samples_leaf 50, max_features sqrt, her ağaç torbanın %30'u;
+- `3g_pu_et`: Extra Trees, torba başına 10 ağaç, min_samples_leaf 50, max_features sqrt.
+
+Eksikler eğitim medyanıyla doldurulur. Ayarlar süre nedeniyle küçük tutuldu, ayar araması yapılmadı.
+
+**Sonuç** (2017–2026, 123 vaka, deney − ana, eşli bootstrap):
+
+| Model | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| PU-RF / PU-LightGBM | 0,850 / 0,833 (**+0,017** [+0,005, +0,030]) | 0,624 / 0,624 (+0,000) | 0,109 / 0,102 |
+| PU-ET / PU-LightGBM | 0,855 / 0,833 (**+0,022** [+0,008, +0,038]) | 0,632 / 0,624 (+0,008) | 0,106 / 0,102 |
+| Kural + PU-RF / ana model | 0,852 / 0,849 (+0,003 [−0,003, +0,010]) | 0,664 / 0,672 (−0,008) | 0,097 / 0,100 |
+| Kural + PU-ET / ana model | 0,848 / 0,849 (−0,001) | 0,648 / 0,672 (−0,024) | 0,091 / 0,100 |
+
+(2012–2026'da Kural + PU-RF AUC 0,820 / 0,806, yakalama 0,728 / 0,712; birincil dönem 2017–2026.)
+
+**Yorum.**
+- Ormanlar PU modelinin tek başına sıralamasını anlamlı iyileştirdi (AUC +0,02). Rastgele ağaçlar
+  skorları daha yumuşak dağıtıyor; vakaların genel sırası iyileşiyor.
+- Listenin üstü (ilk 20, ilk 10) değişmedi. Kurallarla birleşince fark kayboluyor: kurallar zaten
+  listenin üstünü güçlü biçimde belirliyor ve PU'nun genel sıralamadaki kazancı birleşime yansımıyor.
+- Karar (önceden yazılan kurala göre): ana model değişmedi. RF ve ET PU modelleri karşılaştırma için
+  depoda kaldı (`3f_pu_rf`, `3g_pu_et`).
+
 ## Deneme (25.11.2026): farklı PU yöntemleri — Elkan–Noto eşdeğer, nnPU daha kötü (Linear MEL-82)
 
 **Soru.** Ana modeldeki PU bagging (Mordelet & Vert 2014) yerine başka bir PU yöntemi daha iyi olur mu?

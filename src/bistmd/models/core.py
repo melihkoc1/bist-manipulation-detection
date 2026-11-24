@@ -232,5 +232,51 @@ class PULogistic(PUBagging):
         return np.mean([m.decision(X) for m in self.models], axis=0)
 
 
+class _PUForest(PUBagging):
+    """PU bagging, taban öğrenici sklearn ormanı (MEL-83 deneyi). Eksikler eğitim medyanıyla doldurulur."""
+    trees = 10
+
+    def _forest(self, seed):
+        raise NotImplementedError
+
+    def fit(self, X, y):
+        rng = np.random.default_rng(self.seed)
+        self.cols = feature_columns(X)
+        A = X[self.cols].to_numpy(dtype="float32")
+        self.med = np.nanmedian(A, axis=0)
+        A = np.where(np.isnan(A), self.med, A)
+        pos = np.flatnonzero(y.to_numpy() == 1)
+        unl = np.flatnonzero(y.to_numpy() == 0)
+        size = min(len(unl), len(pos) * self.unl_ratio)
+        self.models = []
+        for b in range(self.n_bags):
+            idx = np.r_[pos, rng.choice(unl, size=size, replace=False)]
+            self.models.append(self._forest(self.seed + b).fit(A[idx], np.r_[np.ones(len(pos)), np.zeros(size)]))
+        return self
+
+    def score(self, X):
+        A = X[self.cols].to_numpy(dtype="float32")
+        A = np.where(np.isnan(A), self.med, A)
+        return np.mean([m.predict_proba(A)[:, 1] for m in self.models], axis=0)
+
+
+class PURandomForest(_PUForest):
+    name = "3f_pu_rf"
+
+    def _forest(self, seed):
+        from sklearn.ensemble import RandomForestClassifier
+        return RandomForestClassifier(n_estimators=self.trees, min_samples_leaf=50, max_features="sqrt",
+                                      max_samples=0.3, n_jobs=-1, random_state=seed)
+
+
+class PUExtraTrees(_PUForest):
+    name = "3g_pu_et"
+
+    def _forest(self, seed):
+        from sklearn.ensemble import ExtraTreesClassifier
+        return ExtraTreesClassifier(n_estimators=self.trees, min_samples_leaf=50, max_features="sqrt",
+                                    n_jobs=-1, random_state=seed)
+
+
 ALL_MODELS = [RuleScore, RuleScoreVWAP, SimpleScore, IForest, Supervised, PUWeighted, PUBagging,
-              LogisticSupervised, PULogistic]
+              LogisticSupervised, PULogistic, PURandomForest, PUExtraTrees]
