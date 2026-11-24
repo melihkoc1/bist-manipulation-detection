@@ -7,6 +7,8 @@
 2   Supervised     — LightGBM; etiketsiz günler negatif sayılır
 3a  PUWeighted     — Elkan–Noto (2008) ağırlıklı yeniden eğitim
 3b  PUBagging      — Mordelet & Vert (2014) bagging PU
+2b  LogisticSupervised — lojistik regresyon, etiketsiz = negatif (MEL-81)
+3c  PULogistic     — PU bagging, taban öğrenici lojistik regresyon (MEL-81)
 
 Not (tez için): Elkan–Noto'nun yalnızca olasılığı c'ye bölen temel hali sıralamayı
 değiştirmez; sıralama metriklerinde gözetimli modelle aynı sonucu verir. Bu yüzden
@@ -167,4 +169,68 @@ class PUBagging:
         return np.mean([m.predict_proba(X[self.cols])[:, 1] for m in self.models], axis=0)
 
 
-ALL_MODELS = [RuleScore, RuleScoreVWAP, SimpleScore, IForest, Supervised, PUWeighted, PUBagging]
+class _LogReg:
+    """Lojistik regresyon için ön işleme + model (MEL-81). Eksikler eğitim medyanıyla doldurulur,
+    değerler eğitimdeki %1–%99 aralığına kırpılır, standartlaştırılır. Ayar yapılmaz (C = 1)."""
+
+    def __init__(self, cols, balanced):
+        self.cols, self.balanced = cols, balanced
+
+    def fit(self, X, y):
+        from sklearn.linear_model import LogisticRegression
+        A = X[self.cols].to_numpy(dtype="float64")
+        self.med = np.nanmedian(A, axis=0)
+        A = np.where(np.isnan(A), self.med, A)
+        self.lo, self.hi = np.percentile(A, 1, axis=0), np.percentile(A, 99, axis=0)
+        A = np.clip(A, self.lo, self.hi)
+        self.mu, self.sd = A.mean(0), A.std(0)
+        self.sd[self.sd == 0] = 1.0
+        self.model = LogisticRegression(C=1.0, max_iter=2000,
+                                        class_weight="balanced" if self.balanced else None)
+        self.model.fit((A - self.mu) / self.sd, np.asarray(y))
+        return self
+
+    def transform(self, X):
+        A = X[self.cols].to_numpy(dtype="float64")
+        A = np.clip(np.where(np.isnan(A), self.med, A), self.lo, self.hi)
+        return (A - self.mu) / self.sd
+
+    def decision(self, X):
+        return self.model.decision_function(self.transform(X))
+
+
+class LogisticSupervised:
+    """2b: lojistik regresyon, etiketsiz günler negatif (2_lightgbm'in doğrusal karşılığı)."""
+    name = "2b_lojistik"
+
+    def fit(self, X, y):
+        self.m = _LogReg(feature_columns(X), balanced=True).fit(X, y)
+        return self
+
+    def score(self, X):
+        return self.m.decision(X)
+
+
+class PULogistic(PUBagging):
+    """3c: PU bagging kurgusu, taban öğrenici lojistik regresyon (3b'nin doğrusal karşılığı)."""
+    name = "3c_pu_lojistik"
+
+    def fit(self, X, y):
+        rng = np.random.default_rng(self.seed)
+        self.cols = feature_columns(X)
+        pos = np.flatnonzero(y.to_numpy() == 1)
+        unl = np.flatnonzero(y.to_numpy() == 0)
+        size = min(len(unl), len(pos) * self.unl_ratio)
+        self.models = []
+        for _ in range(self.n_bags):
+            idx = np.r_[pos, rng.choice(unl, size=size, replace=False)]
+            self.models.append(_LogReg(self.cols, balanced=False).fit(
+                X.iloc[idx], np.r_[np.ones(len(pos)), np.zeros(size)]))
+        return self
+
+    def score(self, X):
+        return np.mean([m.decision(X) for m in self.models], axis=0)
+
+
+ALL_MODELS = [RuleScore, RuleScoreVWAP, SimpleScore, IForest, Supervised, PUWeighted, PUBagging,
+              LogisticSupervised, PULogistic]

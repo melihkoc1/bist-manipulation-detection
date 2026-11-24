@@ -3,6 +3,43 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (24.11.2026): lojistik regresyon — basit model yolun çoğunu yürüyor, ağaçlar listenin üstünde önde (Linear MEL-81)
+
+**Amaç.** Jüri için sade ve açıklanabilir bir taban: aynı 32 göstergeyle doğrusal model.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı): her yıl yalnız eğitim verisinden
+öğrenilen ön işleme (eksikler medyanla, %1–%99 kırpma, standartlaştırma); L2 lojistik regresyon,
+C = 1, ayar yok. İki model:
+- `2b_lojistik`: etiketsiz günler negatif (LightGBM'in karşılığı).
+- `3c_pu_lojistik`: PU bagging kurgusu (15 torba, 20 kat etiketsiz), taban öğrenici lojistik regresyon.
+
+**Sonuç** (2017–2026, 123 vaka, deney − karşılığı, eşli bootstrap; rastgele yakalama 0,232):
+
+| Model | Karşılığı | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|---|
+| Lojistik (etiketsiz = negatif) | LightGBM | 0,813 / 0,806 (+0,009, anlamsız) | 0,536 / 0,592 (−0,073, anlamsız) | 0,092 / 0,098 |
+| PU-lojistik | PU-LightGBM | 0,817 / 0,833 (−0,016, anlamsız) | 0,560 / 0,624 (−0,065, anlamsız) | 0,099 / 0,102 |
+| Kural + PU-lojistik | Ana model | 0,841 / 0,849 (−0,009, anlamsız) | 0,640 / 0,672 (−0,033, anlamsız) | 0,093 / 0,100 |
+
+**Yorum.**
+- Doğrusal model, ağaç modellerinin AUC'sine çok yakın; sinyalin büyük kısmı basit, doğrusal
+  bir ilişkiyle yakalanabiliyor.
+- Ağaç modelleri listenin üstünde (ilk 20) tutarlı biçimde 3–7 puan önde. Fark tek tek anlamlı
+  değil, ama her üç karşılaştırmada aynı yönde. Göstergeler arasındaki etkileşimler (ör. "sert
+  yükseliş VE yüksek devir") en şüpheli birkaç hisseyi ayırmada işe yarıyor.
+- Karar: ana model değişmedi. Lojistik modeller karşılaştırma tabanı olarak depoda kaldı (`2b_lojistik`, `3c_pu_lojistik`).
+
+**Katsayılar** (2026 modeli, ≤2025 verisi, standartlaştırılmış; 15 torbanın ortalaması). Şüpheyi en
+çok artıranlar: son 10 günde yükselen gün sayısı (+0,22), kapanışın ağırlıklı ortalama fiyata göre
+yüksekliği (+0,18), 3 aylık dipten yükseliş (+0,17), halka açık devir (+0,13), 20 günlük getiri
+z-skoru (+0,13). Azaltanlar: 60 günlük zirveden uzaklık (−0,17; zirveye yakın hisse daha şüpheli),
+kapanışın gün aralığındaki yeri (−0,16), tavan sayısı (−0,11).
+
+Dikkat: katsayılar diğer göstergeler sabitken okunur. Tavan sayısının eksi çıkması "tavan iyi" demek
+değil: tavan bilgisi zaten yükselen gün sayısı ve getiri göstergelerinde var; aynı yükseliş içinde
+tavanla gelen hareket biraz daha az şüpheli sayılıyor; nedeni (ör. haberle gelen ani sıçramalar)
+ayrıca incelenmedi.
+
 ## Deneme (19.11.2026): fiyat ile temel değerin kopması (PD/DD, kâr verimi) — zararlı (Linear MEL-18)
 
 **Veri.** İş Yatırım mali tablo servisinden çeyreklik özkaynak ve dönem kârı, 2009 → 2026. Sanayi
