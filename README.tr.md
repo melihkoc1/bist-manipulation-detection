@@ -76,6 +76,7 @@ Kural + PU birleşimi için, 2017–2026.
 | Borsa İstanbul VBTS tedbirleri (açığa satış yasağı, brüt takas, tek fiyat) | Kazanç yok (AUC −0,001): tedbir, modelin zaten gördüğü fiyat oynaklığını izliyor |
 | Fiyat ile temel değerin kopması (PD/DD, son bir yıldan sapması, kâr verimi) | Zararlı (yakalama −5,7 puan): şirket profilinde olduğu gibi model şirket türünü ezberliyor |
 | Ağaç modelleri yerine lojistik regresyon (taban) | AUC neredeyse aynı; ilk 20'de 3–7 puan daha düşük yakalama (anlamsız): sinyalin çoğu doğrusal |
+| Farklı PU yöntemleri (Elkan–Noto, nnPU) | Elkan–Noto PU bagging ile aynı; nnPU daha kötü (AUC −0,015, anlamlı): PU'nun türü ikincil |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
 yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt

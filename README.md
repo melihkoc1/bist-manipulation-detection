@@ -79,6 +79,7 @@ results. Code for failed ideas was not kept; all numbers are in the
 | Borsa Istanbul volatility measures (VBTS: short-sale ban, gross settlement, single price) | No gain (AUC −0.001): the measures follow price volatility the model already sees |
 | Price vs fundamentals (price-to-book, its deviation from the past year, earnings yield) | Harmful (recall −5.7 points): like company profile, the model memorises company types |
 | Logistic regression instead of gradient-boosted trees (baseline) | AUC nearly the same; 3–7 points lower recall in the top 20 (not significant): most of the signal is linear |
+| Other PU methods (Elkan–Noto reweighting, nnPU) | Elkan–Noto equals PU bagging; nnPU is worse (AUC −0.015, significant): the PU variant matters little |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
 likely need new information (broker-level "AKD" data) or more pump-and-dump labels.

@@ -3,6 +3,41 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): farklı PU yöntemleri — Elkan–Noto eşdeğer, nnPU daha kötü (Linear MEL-82)
+
+**Soru.** Ana modeldeki PU bagging (Mordelet & Vert 2014) yerine başka bir PU yöntemi daha iyi olur mu?
+
+**1) Elkan–Noto ağırlıklı yeniden eğitim** (`3a_pu_agirlikli`, projede baştan beri vardı; skorlar eşli
+olarak yeniden karşılaştırıldı). 2017–2026, 123 vaka:
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| PU: Elkan–Noto / bagging | 0,833 / 0,833 (+0,000 [−0,004, +0,005]) | 0,592 / 0,624 (−0,016, anlamsız) | 0,097 / 0,102 |
+| Kural + PU: Elkan–Noto / bagging | 0,848 / 0,849 (−0,001) | 0,672 / 0,672 | 0,096 / 0,100 |
+
+İki yöntem eşdeğer: PU'nun hangi türü seçildiği sonucu değiştirmiyor.
+
+**2) nnPU** (Kiryo ve ark. 2017; negatif olmayan PU riski). Tasarım sonuçlara bakılmadan Linear'a yazıldı.
+Ortamda derin öğrenme kütüphanesi olmadığı için doğrusal sürüm numpy ile yazıldı (sigmoid kayıp, Adam,
+20 tur); ön işleme lojistik tabanla aynı. Sınıf oranı π her yıl Elkan–Noto ile tahmin edildi. Adil
+karşılaştırma aynı doğrusal öğreniciyle (PU-lojistik, MEL-81).
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| nnPU / PU-lojistik (doğrusal, eşit şartlar) | 0,807 / 0,816 (−0,009 [−0,030, +0,015]) | 0,585 / 0,553 (+0,032, anlamsız) | — |
+| Kural + nnPU / ana model | 0,833 / 0,849 (**−0,015** [−0,028, −0,003]) | 0,632 / 0,672 (−0,041, anlamsız) | 0,078 / 0,100 |
+
+**π tahmini başarısız oldu.** Tahmin her yıl üst sınıra (0,3) dayandı: c (pozitifin etiketlenme
+olasılığı) 0,009–0,017 çıktı. Elkan–Noto'nun "pozitifler etiketsizlerden ayrışabilir ve model kalibre"
+varsayımı bu veride tutmuyor. Sonuçları gördükten sonra yapılan duyarlılık analizi (karar için
+kullanılmadı): π = 0,05 sabitlenince Kural + nnPU AUC 0,833 (−0,016, anlamlı), yakalama 0,592
+(−0,081, anlamlı). Yani nnPU'nun zayıflığı yalnız π'den kaynaklanmıyor.
+
+**Karar: ana model değişmedi.** nnPU kodu depoya alınmadı. Tez için çıkarım: PU yaklaşımı önemli
+(gözetimli öğrenmeye göre anlamlı iyi), ama PU'nun türü ikincil; en basit ve π gerektirmeyen bagging
+yeterli. nnPU gibi π'ye dayanan yöntemler, gerçek manipülasyon oranı bilinmediği için bu problemde
+dezavantajlı.
+
 ## Deneme (24.11.2026): lojistik regresyon — basit model yolun çoğunu yürüyor, ağaçlar listenin üstünde önde (Linear MEL-81)
 
 **Amaç.** Jüri için sade ve açıklanabilir bir taban: aynı 32 göstergeyle doğrusal model.
