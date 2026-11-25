@@ -3,6 +3,47 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): SPK vakalarına şekil benzerliği (DTW, en yakın komşu) — tek başına sinyal var, birleşime katkı yok (Linear MEL-84)
+
+**Fikir.** Her hissenin son 60 günlük fiyat ve hacim grafiğini, o tarihte bilinen SPK vakalarının
+grafikleriyle karşılaştırmak. Model şirketi değil şekli öğrendiği için ezbere daha az açık olabilirdi;
+çıktısı da anlaşılır olurdu ("X vakasına benziyor").
+
+**Şekil.** Her haftanın son işlem gününde son 60 işlem günü, 3'er günlük ortalamalarla 20 noktaya
+indirildi. İki kanal: log(kapanış / pencerenin ilk kapanışı) ve log(hacim / pencere medyanı).
+
+**Şablonlar.** Y yılı için yalnız Y−1 sonuna kadar açıklanmış ana set vakalarının pencere haftaları
+(2017'de 1.130, 2026'da 6.947 şablon).
+
+**Benzerlik.** Öklid ile aday seçimi, ardından DTW (dinamik zaman bükme, Sakoe–Chiba bandı 2).
+Ortamda DTW kütüphanesi olmadığı için numpy ile yazıldı ve yapay seriyle doğrulandı.
+
+**Tasarım 1** (önceden kayıtlı): skor = −(en yakın 5 vaka şablonuna DTW mesafesi). **Başarısız, ters çalıştı.**
+- Tek başına AUC 0,276; yakalama@20 0,033 (rastgele 0,236).
+- Kural + PU + DTW: AUC 0,762, yakalama 0,293 (anlamlı kötü).
+- Teşhis: skor ile şeklin büyüklüğü arasında Spearman −0,83. En yakın komşu mesafesi yoğunluk
+  etkisine yakalanıyor: sakin hisseler her şeye yakın, oynak hisseler her şeye uzak. Skor pratikte
+  "sakinliği" ölçtü.
+- Bu bilinen bir tuzak; tasarımda öngörülmeliydi.
+
+**Tasarım 2** (tasarım 1'in sonucundan sonra, ama çalıştırmadan önce Linear'a yazıldı). k-NN sınıf
+oranı, yoğunluk etkisini iptal eder:
+- Başvuru kümesi: vaka şablonları + Y−1 sonuna kadarki etiketsiz haftalardan 20 kat örneklem.
+- Skor: DTW ile en yakın 20 komşudaki vaka oranı.
+
+| 2017–2026 | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| DTW-kNN tek başına | 0,683 | 0,463 (rastgele 0,236) | 0,059 |
+| PU (karşılaştırma) | 0,833 | 0,624 | 0,102 |
+| Kural + PU + DTW-kNN / ana model | 0,839 / 0,849 (−0,011, anlamsız) | 0,634 / 0,672 (−0,050, anlamsız) | 0,091 / 0,100 |
+
+**Yorum.**
+- Grafik şekli tek başına gerçek bir sinyal taşıyor: rastgele listenin iki katı vaka yakalıyor.
+- Ama PU modelinin gerisinde ve birleşime katkı yapmıyor, hatta hafif bozuyor. PU modelinin
+  göstergeleri (getiri, devir, dipten yükseliş) şeklin bilgisini zaten içeriyor.
+- **Karar: eklenmedi.** Kod depoya alınmadı. Sitede "benzer vaka" gösterimi de bu zayıf sinyal
+  nedeniyle şimdilik yapılmadı.
+
 ## Deneme (25.11.2026): PU içinde Random Forest / Extra Trees — PU'nun AUC'si arttı, ana model değişmedi (Linear MEL-83)
 
 **Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı): PU bagging kurgusu aynı (15 torba,
