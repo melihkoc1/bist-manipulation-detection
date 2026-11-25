@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getResult, useIndex, type Index } from "../data";
+import { getResult, useIndex, useJson, type Index } from "../data";
 import { useT } from "../i18n";
 import { Page } from "../components/Layout";
 import { Check, Half, Star, X } from "../components/Icons";
@@ -24,6 +24,7 @@ const LOG: { idea: [string, string]; ok: boolean; eff: [string, string]; date: s
   { idea: ["Kural + PU birleşimi (eşit ağırlıklı sıra ortalaması)", "Rules + PU ensemble (equal-weight rank average)"], ok: true, eff: ["En iyi model; AUC hem kurallardan hem PU'dan anlamlı yüksek", "Best model; AUC significantly above both rules and PU"], date: "2026-10-23" },
   { idea: ["Birleşim ağırlıklarını geçmiş yıllardan öğrenmek", "Learning ensemble weights from past years"], ok: false, eff: ["Eşit ağırlıkla aynı (AUC +0,000, anlamsız); eşit ağırlık korundu", "Same as equal weights (AUC +0.000, n.s.); equal weights kept"], date: "2026-11-17" },
   { idea: ["Hissenin SPK geçmişi (önceki vaka sayısı)", "Stock's SPK history (number of prior cases)"], ok: false, eff: ["Anlamlı kötüleşme (PU AUC −0,04); model \"sicili olan\" hisseleri öne çekti", "Significantly worse (PU AUC −0.04); the model favoured stocks with a record"], date: "2026-11-17" },
+  { idea: ["Kendi pompala-boşalt örüntü etiketlerimiz (eğitimde zayıf pozitif)", "Our own pump-and-dump pattern labels (weak positives in training)"], ok: false, eff: ["612 / 214 ek etiket; PU'nun AUC'si hafif arttı ama Kural + PU değişmedi", "612 / 214 extra labels; PU AUC rose slightly but Rules + PU did not change"], date: "2026-11-25" },
   { idea: ["\"Ne zaman çöker?\" modeli (SPK etiketi yerine fiyattan büyük düşüş)", "\"When will it crash?\" model (large price drop instead of SPK labels)"], ok: false, eff: ["SPK etiketi görmeden vakaları PU'ya yakın sıralıyor (AUC 0,808); birleşime katkı anlamsız", "Ranks SPK cases almost as well as PU without seeing SPK labels (AUC 0.808); no significant gain in the ensemble"], date: "2026-11-25" },
   { idea: ["Otomatik kodlayıcı ile anomali (etiketsiz)", "Autoencoder anomaly detection (unsupervised)"], ok: false, eff: ["Isolation Forest'tan anlamlı zayıf (AUC −0,042); birleşime katkı yok", "Significantly weaker than Isolation Forest (AUC −0.042); no gain in the ensemble"], date: "2026-11-25" },
   { idea: ["Derin öğrenme (ham seriden 1B CNN)", "Deep learning (1D CNN on raw series)"], ok: false, eff: ["Tek başına PU'nun anlamlı gerisinde; birleşime katkı yok (az etiketle elle yazılmış göstergeler daha verimli)", "Alone significantly behind PU; no gain in the ensemble (with few labels hand-crafted features work better)"], date: "2026-11-25" },
@@ -44,6 +45,68 @@ const LOG: { idea: [string, string]; ok: boolean; eff: [string, string]; date: s
   { idea: ["Boş alarmların incelenmesi (SPK kararı olmayan ilk 10 hisseleri)", "Reviewing false alarms (top-10 stocks without an SPK decision)"], ok: true, eff: ["Veri hatası yok; boş alarmlar da olağan dışı hareketler (üçte biri yükseliş + çöküş, rastgelede %5). İsabet oranı alt sınır", "No data errors; false alarms are unusual moves too (a third rise then crash, 5% at random). Precision is a lower bound"], date: "2026-11-17" },
   { idea: ["Dönemi bilinmeyen vakaları tahminle etiketleme", "Estimating periods for cases without a stated period"], ok: false, eff: ["6 aylık pencereye göre kazanç yok; yalnızca belgelendi", "No gain over the 6-month window; documented only"], date: "2026-10-24" },
 ];
+
+/** Denenen diğer modeller (MEL-81…87, MEL-32): scripts/alt_models.py → export_web.py --alt → alt_models.json. */
+interface AltRow {
+  key: string; tr: string; en: string; group: "tek" | "birlesim"; issue: string; ref: string;
+  auc: number; rec: number; rnd: number; prec10: number;
+  dAuc: number; dAucLo: number; dAucHi: number; dAucSig: boolean; dRec: number; dRecLo: number; dRecHi: number; dRecSig: boolean;
+}
+const REF_NAMES: Record<string, [string, string]> = {
+  "3b_pu_bagging": ["PU bagging", "PU bagging"], "4_kural_pu": ["ana model", "main model"],
+  "2_lightgbm": ["LightGBM", "LightGBM"], "1_iforest": ["Isolation Forest", "Isolation Forest"],
+};
+
+function AltModels() {
+  const f = useT();
+  const { data } = useJson<AltRow[]>("alt_models.json");
+  if (!data?.length) return null;
+  const diff = (d: number, lo: number, hi: number, sig: boolean, digits: number, pct: boolean) => {
+    const v = pct ? `${d >= 0 ? "+" : "−"}${f.num(Math.abs(d) * 100, 1)}` : `${d >= 0 ? "+" : "−"}${f.num(Math.abs(d), digits)}`;
+    const ci = pct ? `[${f.num(lo * 100, 1)}, ${f.num(hi * 100, 1)}]` : `[${f.num(lo, digits)}, ${f.num(hi, digits)}]`;
+    return <span title={ci} style={{ fontWeight: sig ? 700 : 400, color: sig ? (d > 0 ? "var(--teal)" : "var(--red, #c0392b)") : undefined }}>{v}{sig ? " *" : ""}</span>;
+  };
+  const table = (grp: AltRow["group"], cap: string) => (
+    <div className="tbl-wrap">
+      <table className="t num">
+        <caption className="sr">{cap}</caption>
+        <thead><tr>
+          <th scope="col">Model</th><th scope="col">AUC</th><th scope="col">{f.L("İlk 20'de yakalama", "Caught in top 20")}</th>
+          <th scope="col">{f.L("Rastgele", "Random")}</th><th scope="col">{f.L("İlk 10 isabeti", "Top-10 precision")}</th>
+          <th scope="col">{f.L("Karşılaştırılan", "Compared with")}</th><th scope="col">{f.L("AUC farkı", "AUC diff.")}</th><th scope="col">{f.L("Yakalama farkı (puan)", "Recall diff. (pts)")}</th>
+        </tr></thead>
+        <tbody>
+          {data.filter((x) => x.group === grp).map((x) => (
+            <tr key={x.key}>
+              <td style={{ fontWeight: 600 }}>{f.L(x.tr, x.en)} <span className="faint" style={{ fontSize: 11, fontWeight: 400 }}>{x.issue}</span></td>
+              <td>{f.num(x.auc, 3)}</td><td>{f.pct(x.rec)}</td><td>{f.pct(x.rnd)}</td><td>{f.pct(x.prec10, 1)}</td>
+              <td className="muted">{f.L(...(REF_NAMES[x.ref] ?? [x.ref, x.ref]))}</td>
+              <td>{diff(x.dAuc, x.dAucLo, x.dAucHi, x.dAucSig, 3, false)}</td>
+              <td>{diff(x.dRec, x.dRecLo, x.dRecHi, x.dRecSig, 1, true)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+  return (
+    <section className="card" aria-labelledby="alt-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <h2 id="alt-h" style={{ fontSize: 18, fontWeight: 600 }}>{f.L("Denenen diğer modeller · 2017–2026", "Other models tried · 2017–2026")}</h2>
+        <p style={{ fontSize: 14, lineHeight: 1.55 }} className="muted">{f.L(
+          "Hepsi aynı dürüst testle: her yıl yalnız geçmiş verilerle eğitildi, ayarlar sonuçlara bakılmadan sabitlendi. Hiçbiri ana modelin (Kural + PU) ilk 20 yakalamasını anlamlı biçimde geçmedi; birkaçı AUC'de küçük artış gösterdi ama listenin üstü iyileşmediği için ana model korundu.",
+          "All with the same honest test: each year trained on past data only, settings fixed before seeing results. None significantly beat the main model's (Rules + PU) top-20 recall; a few gave small AUC gains, but the main model was kept because the top of the list did not improve.")}</p>
+      </div>
+      <h3 style={{ fontSize: 15, fontWeight: 600 }}>{f.L("Tek başına", "On their own")}</h3>
+      {table("tek", f.L("Denenen modeller, tek başına", "Models tried, on their own"))}
+      <h3 style={{ fontSize: 15, fontWeight: 600 }}>{f.L("Kurallarla birleşince (ana modelle karşılaştırma)", "Combined with the rules (vs the main model)")}</h3>
+      {table("birlesim", f.L("Kurallarla birleşimler", "Ensembles with the rules"))}
+      <p style={{ fontSize: 12, lineHeight: 1.55 }} className="faint">{f.L(
+        "Fark: modelin değeri − karşılaştırılan modelin değeri, aynı vakalarda. * ve kalın: %95 eşli bootstrap güven aralığı 0'ı içermiyor (anlamlı); aralık için üzerine gelin. Aralığı 0'a çok yakın (sınırda) sonuçlar bootstrap tekrarına göre anlamlı / anlamsız arasında değişebilir. Ayrıntılar ve tasarımlar: docs/yorum_v2.md ve deneme günlüğü.",
+        "Difference: model − comparison model, on the same cases. * and bold: the 95% paired-bootstrap interval excludes 0 (significant); hover for the interval. Borderline results (interval touching 0) can flip between significant and not across bootstrap runs. Details and designs: docs/yorum_v2.md and the experiment log.")}</p>
+    </section>
+  );
+}
 
 export default function Results() {
   const { data: idx, error } = useIndex();
@@ -144,6 +207,8 @@ function Body({ idx }: { idx: Index }) {
                `Top-10 precision: share of top-10 stocks that are SPK cases (random ~${f.pct(rnd?.base10, 1)}). CI: case-level bootstrap. Lead: days from manipulation start to first alarm.`)}
         </p>
       </section>
+
+      <AltModels />
 
       <section className="card" aria-labelledby="hist-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

@@ -83,6 +83,7 @@ Kural + PU birleşimi için, 2017–2026.
 | Derin öğrenme (ham 60 günlük seriden küçük 1B CNN) | Tek başına PU'nun anlamlı gerisinde; birleşime katkı yok: ~125 vakayla elle yazılmış göstergeler daha verimli |
 | Otomatik kodlayıcı ile anomali (etiketsiz) | Isolation Forest'tan anlamlı zayıf (AUC −0,042); birleşime katkı yok: olağan dışı, manipülasyon demek değil |
 | "Ne zaman çöker?" modeli (60 günde ≥%40 düşüş, SPK etiketi yok) | SPK vakalarını görmeden PU'ya yakın sıralıyor (AUC 0,808 / 0,833), ama birleşime katkı anlamsız |
+| Kendi fiyat temelli pompala-boşalt etiketlerimiz zayıf pozitif olarak (214–612 ek dönem) | PU AUC hafif arttı (anlamsız); Kural + PU değişmedi: etiketler modelin zaten bildiğini tekrar ediyor |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
 yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt

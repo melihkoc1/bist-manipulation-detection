@@ -3,6 +3,54 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): kendi pompala-boşalt örüntü etiketlerimiz (zayıf pozitif) — kazanç yok (Linear MEL-32)
+
+**Fikir.** SPK'nın ~125 vakası azdı. MEL-87'de fiyattan tanımlanan çöküş riskinin SPK vakalarıyla örtüştüğü
+görülünce, fiyat verisinden kendi "pompala-boşalt örüntüsü" etiketlerimizi üretip eğitime eklemeyi denedik.
+Bu etiketler "manipülasyon" iddiası değildir; yalnız modelin iç eğitiminde kullanıldı.
+
+**Tanım** (kullanıcıyla birlikte belirlendi):
+- **Pompa:** 60 işlem gününde dipten yükseliş; zirve ±20 günün en yükseği.
+- **Boşaltma:** zirveden sonraki 60 işlem gününde düşüş.
+- **Hacim:** yükseliş dönemi hacmi, önceki 60 gün medyanının ≥ 3 katı.
+- **Piyasadan bağımsızlık:** yükseliş − XU100 yükselişi ≥ 50 puan.
+- **Dışarıda kalanlar:** pompada tek günde > %25 sıçrama; önceki 60 günde sermaye artırımı / azaltımı bildirimi; halka arzın ilk 60 günü.
+- **Haberli dönemler** ayrı işaretlendi.
+- **Bilinme tarihi:** zirve + 60 işlem günü.
+
+**Sayım** (rastgele = aynı hissede rastgele zaman kaydırma):
+
+| Tanım | Dönem | Hisse | SPK penceresiyle örtüşen | Rastgele |
+|---|---|---|---|---|
+| A: ≥%100 / ≥%50, geniş sermaye filtresi | 115 | 97 | %16,5 | %5,0 |
+| B: ≥%100 / ≥%50, yalnız sermaye artırımı filtresi | 214 | 163 | %16,4 | %5,4 |
+| C: ≥%50 / ≥%40, yalnız sermaye artırımı filtresi | 612 | 324 | %12,1 | %4,9 |
+
+- Etiketler SPK vakalarıyla rastgelenin 2,5–3 katı örtüşüyor.
+- Ama %84–88'i SPK'nın hiç işlem yapmadığı dönemler; 2020'de yığılma var (pandemi sonrası balon).
+- İlk denemedeki geniş sermaye filtresi, kâr payı gibi rutin bildirimleri de saydığı için adayların üçte ikisini atıyordu; daraltıldı.
+
+**Deney** (tasarım sonuçtan önce Linear'a yazıldı; kullanıcı kararı: C birincil, B ikincil):
+- Y yılı modeli için Y−1 sonuna kadar bilinen örüntülerin pompa günleri zayıf pozitif (örnek ağırlığı 0,5).
+- PU bagging aynı; değerlendirme yalnız SPK vakalarıyla.
+
+| 2017–2026, 123 vaka | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| PU + C / PU | 0,842 / 0,833 (+0,009 [−0,001, +0,020]) | 0,600 / 0,624 (−0,024) | 0,095 / 0,102 |
+| **Kural + PU(C) / ana model (birincil)** | 0,847 / 0,849 (−0,003, anlamsız) | 0,648 / 0,672 (−0,024, anlamsız) | 0,090 / 0,100 |
+| PU + B / PU | 0,840 / 0,833 (+0,007) | 0,616 / 0,624 | 0,102 / 0,102 |
+| Kural + PU(B) / ana model | 0,849 / 0,849 (+0,000) | 0,656 / 0,672 (−0,016) | 0,092 / 0,100 |
+
+**Yorum.**
+- Fiyat temelli etiketler PU'nun genel sıralamasını hafifçe iyileştiriyor (anlamsız). Kurallarla
+  birleşince hiçbir şey değişmiyor, listenin üstü hafif kötüleşiyor.
+- Olası neden: kendi etiketlerimiz, modelin zaten iyi bildiği "sert yükseliş + yüksek hacim"
+  örüntüsünü tekrar ediyor; yeni bir bilgi eklemiyor. SPK vakalarını sıradan balonlardan ayıran
+  ince farklar bu etiketlerde yok.
+- MEL-10 (ana set dışı vakalar) ile aynı tablo: daha çok etiket genel sıralamaya küçük katkı veriyor,
+  inceleme listesinin üstünü değiştirmiyor.
+- **Karar: ana model değişmedi.** Etiket ve eğitim kodu depoya alınmadı.
+
 ## Deneme (25.11.2026): "ne zaman çöker?" — SPK etiketi görmeden vakaları buluyor, ama birleşime katkı anlamsız (Linear MEL-87)
 
 **Fikir.** Sistemin zayıf yanı düşüş ("boşalt") aşamasını görmemesi. Bu kez model SPK kararlarını

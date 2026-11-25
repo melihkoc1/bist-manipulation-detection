@@ -309,7 +309,26 @@ def export_live(with_lists: bool = True) -> None:
     })
 
 
+def export_alt() -> None:
+    """Denenen diğer modeller (MEL-81…87, MEL-32): scripts/alt_models.py çıktısı → alt_models.json."""
+    src = RESULTS / "alt_models.csv"
+    if not src.exists():
+        return
+    a = pd.read_csv(src)
+    dump(OUT / "alt_models.json", [
+        {"key": x["key"], "tr": x["tr"], "en": x["en"], "group": x["group"], "issue": x["issue"], "ref": x["ref"],
+         "auc": r(x["auc"], 4), "rec": r(x["rec"], 4), "rnd": r(x["rnd"], 4), "prec10": r(x["prec10"], 4),
+         "dAuc": r(x["d_auc"], 4), "dAucLo": r(x["d_auc_lo"], 4), "dAucHi": r(x["d_auc_hi"], 4), "dAucSig": bool(x["d_auc_sig"]),
+         "dRec": r(x["d_rec"], 4), "dRecLo": r(x["d_rec_lo"], 4), "dRecHi": r(x["d_rec_hi"], 4), "dRecSig": bool(x["d_rec_sig"])}
+        for _, x in a.iterrows()])
+
+
 def main() -> None:
+    if "--alt" in sys.argv:  # yalnız denenen diğer modeller tablosu
+        OUT.mkdir(parents=True, exist_ok=True)
+        export_alt()
+        print("alt_models.json yazıldı")
+        return
     if "--live" in sys.argv:  # yalnız canlı test özeti (tam dışa aktarım ~dakikalar sürer)
         OUT.mkdir(parents=True, exist_ok=True)
         export_live(with_lists="--no-lists" not in sys.argv)
@@ -348,6 +367,7 @@ def main() -> None:
     }
     dump(OUT / "index.json", index)
     export_live()
+    export_alt()
     size = sum(f.stat().st_size for f in OUT.rglob("*.json")) / 1e6
     print(f"bitti: {len(weeks)} hafta, {len(stocks)} hisse, {size:.0f} MB → {OUT.relative_to(ROOT)} "
           f"({time.time() - t0:.0f} sn)")
