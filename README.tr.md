@@ -84,6 +84,7 @@ Kural + PU birleşimi için, 2017–2026.
 | Otomatik kodlayıcı ile anomali (etiketsiz) | Isolation Forest'tan anlamlı zayıf (AUC −0,042); birleşime katkı yok: olağan dışı, manipülasyon demek değil |
 | "Ne zaman çöker?" modeli (60 günde ≥%40 düşüş, SPK etiketi yok) | SPK vakalarını görmeden PU'ya yakın sıralıyor (AUC 0,808 / 0,833), ama birleşime katkı anlamsız |
 | Kendi fiyat temelli pompala-boşalt etiketlerimiz zayıf pozitif olarak (214–612 ek dönem) | PU AUC hafif arttı (anlamsız); Kural + PU değişmedi: etiketler modelin zaten bildiğini tekrar ediyor |
+| Aynı günlerde birlikte sıçrayan hisseler ağı | Kazanç yok: SPK vakaları benzer yükselişlerden daha *yalnız* hareket ediyor; birlikte sıçrama piyasa / sektör coşkusu |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
 yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt

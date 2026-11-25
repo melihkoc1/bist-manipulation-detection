@@ -3,6 +3,42 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): birlikte sıçrayan hisseler ağı — kazanç yok (Linear MEL-88)
+
+**Fikir.** ~100 çok hisseli SPK kararı var; aynı grup birkaç hisseyi birlikte pompalıyorsa bu hisseler
+aynı günlerde birlikte sıçramalı.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Sıçrama günü: günlük getiri ≥ %5 ve hacim 20 gün medyanının ≥ 2 katı.
+- Her gün için son 60 işlem gününde hisse çiftlerinin birlikte sıçrama sayısı. Piyasa geneli
+  günlerin etkisini azaltmak için günler, o gün sıçrayan hisse sayısıyla ters ağırlıklandırıldı.
+- Göstergeler: en güçlü ortakla ağırlıklı birlikte sıçrama (`co_max_60`), ≥ 3 kez birlikte
+  sıçradığı hisse sayısı (`co_n_60`), en güçlü ortağın bugün de sıçraması (`co_partner_now`).
+- PU bu 3 ek göstergeyle yeniden eğitildi.
+
+**Betimsel kontrol** (2012+). Getirisi en yüksek %5'lik günler kendi içinde:
+
+| | ≥ 3 kez birlikte sıçradığı ortak var | Ortalama ortak sayısı |
+|---|---|---|
+| SPK vaka günleri | %61 | 6,2 |
+| Vaka olmayan günler | %78 | 10,8 |
+
+Beklentinin tersi: SPK vakaları, benzer yükselişteki diğer hisselere göre daha *yalnız* hareket ediyor.
+Birlikte sıçrama daha çok piyasa / sektör coşkusunu yansıtıyor.
+
+**Sonuç** (2017–2026, 123 vaka, deney − ana):
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| PU + ağ / PU | 0,815 / 0,833 (**−0,019** [−0,033, −0,006]) | 0,624 / 0,624 (+0,000) | 0,098 / 0,102 |
+| Kural + PU + ağ / ana model | 0,844 / 0,849 (−0,006, anlamsız) | 0,672 / 0,672 (+0,000) | 0,096 / 0,100 |
+
+**Karar: eklenmedi.** Kod depoya alınmadı.
+
+**Not:** çok hisseli SPK kararları çoğunlukla aynı kişilerin farklı zamanlarda farklı hisselerde
+işlem yapmasını anlatıyor olabilir. Eş zamanlı sıçrama bunu yakalamıyor; bunun için aracı kurum
+düzeyinde veri (AKD, MEL-19) gerekir.
+
 ## Deneme (25.11.2026): kendi pompala-boşalt örüntü etiketlerimiz (zayıf pozitif) — kazanç yok (Linear MEL-32)
 
 **Fikir.** SPK'nın ~125 vakası azdı. MEL-87'de fiyattan tanımlanan çöküş riskinin SPK vakalarıyla örtüştüğü

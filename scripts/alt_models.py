@@ -1,4 +1,4 @@
-"""Denenen diğer modellerin (MEL-81…87, MEL-32) 2017–2026 sonuçlarını tek tabloda toplar.
+"""Denenen diğer modellerin (MEL-81…88, MEL-32) 2017–2026 sonuçlarını tek tabloda toplar.
 
 Her model için: AUC, yakalama@20, rastgele yakalama, ilk 10 isabeti ve karşılığına göre eşli
 bootstrap farkı (aynı vakalar). Skorlar deney klasörlerinden okunur (data/interim/scores_exp_*,
@@ -33,6 +33,7 @@ MODELS = [
     ("1b", "Otomatik kodlayıcı", "Autoencoder", "tek", "scores_exp_mel86/honest_none_1b_autoencoder", IF, "MEL-86"),
     ("7", "Çöküş modeli (SPK etiketi yok)", "Crash model (no SPK labels)", "tek", "scores_exp_mel87/honest_none_7_cokus", PU, "MEL-87"),
     ("32c", "PU + kendi örüntü etiketleri (C)", "PU + own pattern labels (C)", "tek", "scores_exp_mel32c/honest_none_3b_pu_bagging", PU, "MEL-32"),
+    ("88", "PU + birlikte sıçrama ağı", "PU + co-surge network", "tek", "scores_exp_mel88/honest_none_3b_pu_bagging", PU, "MEL-88"),
     ("32b", "PU + kendi örüntü etiketleri (B)", "PU + own pattern labels (B)", "tek", "scores_exp_mel32b/honest_none_3b_pu_bagging", PU, "MEL-32"),
     ("e3a", "Kural + Elkan–Noto PU", "Rules + Elkan–Noto PU", "birlesim", "scores_exp_mel82_en/honest_none_4_kural_pu", ENS, "MEL-82"),
     ("e3c", "Kural + PU-lojistik", "Rules + PU-logistic", "birlesim", "scores_exp_mel81_pu/honest_none_4_kural_pu", ENS, "MEL-81"),
@@ -45,6 +46,7 @@ MODELS = [
     ("u1b", "Kural + PU + otomatik kodlayıcı", "Rules + PU + autoencoder", "birlesim", "scores_exp_mel86_uclu/honest_none_4_kural_pu", ENS, "MEL-86"),
     ("u7", "Kural + PU + çöküş modeli", "Rules + PU + crash model", "birlesim", "scores_exp_mel87_uclu/honest_none_4_kural_pu", ENS, "MEL-87"),
     ("e32c", "Kural + PU (kendi etiketler C)", "Rules + PU (own labels C)", "birlesim", "scores_exp_mel32c/honest_none_4_kural_pu", ENS, "MEL-32"),
+    ("e88", "Kural + PU (birlikte sıçrama ağı)", "Rules + PU (co-surge network)", "birlesim", "scores_exp_mel88/honest_none_4_kural_pu", ENS, "MEL-88"),
     ("e32b", "Kural + PU (kendi etiketler B)", "Rules + PU (own labels B)", "birlesim", "scores_exp_mel32b/honest_none_4_kural_pu", ENS, "MEL-32"),
 ]
 
