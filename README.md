@@ -88,6 +88,7 @@ results. Code for failed ideas was not kept; all numbers are in the
 | "When will it crash?" model (predicts a ≥40% drop in 60 days, no SPK labels) | Ranks SPK cases almost as well as PU (AUC 0.808 vs 0.833) without seeing them, but no significant gain in the ensemble |
 | Our own price-based pump-and-dump labels as weak positives (214–612 extra episodes) | PU AUC up slightly (n.s.); no change for Rules + PU: the labels repeat what the model already knows |
 | Network of stocks surging on the same days | No gain: SPK cases move more *alone* than similar rallies; co-surges reflect market or sector moods |
+| Indicators ranked against similar-size peers (daily size quintiles) | No gain; indicators are already measured against each stock's own history, and the 2022 weakness did not improve |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
 likely need new information (broker-level "AKD" data) or more pump-and-dump labels.

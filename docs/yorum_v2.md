@@ -3,6 +3,38 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): büyüklük akranlarına göre göstergeler — kazanç yok (Linear MEL-89)
+
+**Fikir.** Göstergeleri tüm piyasa yerine benzer büyüklükteki hisselere göre ölçmek. Küçük bir
+hissenin %30 yükselmesi küçükler arasında sıradan, büyükler arasında olağanüstü olabilir. Ayrıca
+2022 gibi her şeyin yükseldiği yıllarda göreli ölçünün yardımcı olması bekleniyordu.
+
+**Tasarım** (sonuçtan önce Linear'a yazıldı):
+- Grup: her işlem günü, o günün USD piyasa değerine göre 5 büyüklük dilimi. Büyüklük yalnız grup
+  tanımında; yeni seviye özelliği eklenmedi (ezber riski).
+- Sektör: yerel veritabanında sektör bilgisi yok; bu denemenin dışında kaldı.
+- 12 göstergenin (getiri 5/20 gün, z-getiri, endeks üstü getiri, hacim oranları, devir hızı, dipten
+  uzaklık, oynaklık oranı, tavan sayısı, kapanış/VWAP) aynı gün, aynı dilim içindeki yüzdelik sırası
+  `peer_` önekiyle mevcut göstergelere eklendi. Dürüst yıllık protokol, PU yeniden eğitildi.
+
+| 2017–2026, 123 vaka | Ana | Akran göstergeli | Fark (eşli bootstrap) |
+|---|---|---|---|
+| PU AUC | 0,833 | 0,830 | −0,003 [−0,019, +0,011] anlamsız |
+| PU yakalama@20 | 0,624 | 0,600 | −0,024 [−0,081, +0,033] anlamsız |
+| Kural + PU AUC | 0,849 | 0,849 | −0,000 [−0,008, +0,008] anlamsız |
+| Kural + PU yakalama@20 | 0,672 | 0,664 | −0,008 [−0,049, +0,033] anlamsız |
+| Kural + PU ilk 10 isabeti | 0,100 | 0,094 | |
+
+**2022 ek raporu** (karar için değil, 24 vaka): Kural + PU AUC 0,793 → 0,790, yakalama 0,375 → 0,333
+(rastgele 0,234). Genel yükseliş yılındaki zayıflık akran ölçüsüyle düzelmedi.
+
+**Yorum.** Mevcut göstergelerin çoğu zaten hissenin kendi geçmişine göre ölçülüyor (z-getiri, hacim /
+60 günlük medyan, devir oranı) ve modelde büyüklük de var; ağaç modeli "küçük hisse + yüksek getiri"
+etkileşimini kendisi kurabiliyor. Akran sırası yeni bilgi getirmedi. 2022'deki zayıflık büyüklük
+grubuyla değil, o yıl pek çok hissenin vakalara benzer davranmasıyla ilgili görünüyor.
+
+**Karar: eklenmedi.** Kod depoya alınmadı.
+
 ## Deneme (25.11.2026): birlikte sıçrayan hisseler ağı — kazanç yok (Linear MEL-88)
 
 **Fikir.** ~100 çok hisseli SPK kararı var; aynı grup birkaç hisseyi birlikte pompalıyorsa bu hisseler
