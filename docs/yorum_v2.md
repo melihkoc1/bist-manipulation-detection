@@ -3,6 +3,33 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): otomatik kodlayıcı ile anomali — Isolation Forest'tan zayıf, birleşime katkı yok (Linear MEL-86)
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Girdi: aynı 32 gösterge; ön işleme lojistik tabanla aynı.
+- Model: otomatik kodlayıcı, 32 → 16 → 4 → 16 → 32, ReLU, torch.
+- Eğitim: her yıl ≤ Y−1 verisinden en fazla 500 bin satır; bilinen vaka günleri çıkarıldı, yani
+  "normal" davranış öğrenildi. MSE, 3 tur, 3 tohum.
+- Skor: yeniden kurma hatası. Ayar araması yok.
+
+**Sonuç** (2017–2026, 123 vaka, eşli bootstrap):
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| Otomatik kodlayıcı / Isolation Forest | 0,778 / 0,820 (**−0,042** [−0,062, −0,022]) | 0,504 / 0,553 (−0,049, anlamsız) | — |
+| Otomatik kodlayıcı / PU | 0,778 / 0,833 (**−0,053**) | 0,512 / 0,624 (**−0,114**) | 0,050 / 0,102 |
+| **Kural + PU + AE / ana model (birincil)** | 0,850 / 0,849 (+0,001, anlamsız) | 0,672 / 0,672 (+0,000) | 0,088 / 0,100 |
+
+Kalın: anlamlı.
+
+**Yorum.**
+- Etiketsiz anomali yöntemleri arasında basit Isolation Forest, sinir ağı tabanlı otomatik
+  kodlayıcıdan anlamlı daha iyi.
+- İkisi de etiket kullanan PU'nun gerisinde: "olağan dışı" ile "manipülasyon" aynı şey değil.
+  Normalden sapan hisse-günlerin çoğu haber, bilanço ya da genel piyasa hareketi.
+- Birleşime katkı yok.
+- **Karar: eklenmedi.** Kod depoya alınmadı.
+
 ## Deneme (25.11.2026): derin öğrenme (1B CNN, ham 60 günlük seri) — tek başına zayıf, birleşime katkı yok (Linear MEL-85)
 
 **Fikir.** Göstergeleri elle tasarlamak yerine, modelin ham seriden kendisinin öğrenmesi.
