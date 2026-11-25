@@ -3,6 +3,39 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): "ne zaman çöker?" — SPK etiketi görmeden vakaları buluyor, ama birleşime katkı anlamsız (Linear MEL-87)
+
+**Fikir.** Sistemin zayıf yanı düşüş ("boşalt") aşamasını görmemesi. Bu kez model SPK kararlarını
+değil, yalnız fiyattan tanımlanan bir olayı öğrendi: `crash_60` = sonraki 60 işlem gününde en
+düşük kapanışın bugünkünün %60'ı ya da altına inmesi (≥ %40 düşüş). Tüm satırların %3,3'ü.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Model: LightGBM, aynı 32 gösterge, ayar yok.
+- Dürüstlük: Y yılı modeli yalnız etiketi Y−1 sonunda belli olan satırlarla eğitildi (tarih + 60
+  işlem günü ≤ Y−1 sonu).
+- Birincil karşılaştırma: Kural + PU + Çöküş ↔ ana model.
+
+**Sonuç.**
+- Çöküş tahmini olarak: 2017–2026 yıllık AUC ortalaması 0,768 (0,57 ile 0,84 arası; en zayıf yıl
+  2020, pandemi çöküşü).
+- SPK tespiti (2017–2026, 123 vaka):
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| Çöküş skoru tek başına / PU | 0,808 / 0,833 (−0,024, anlamsız) | 0,520 / 0,624 (**−0,106**) | 0,092 / 0,102 |
+| **Kural + PU + Çöküş / ana model (birincil)** | 0,859 / 0,849 (+0,009 [−0,001, +0,020], anlamsız) | 0,664 / 0,672 (−0,008) | 0,104 / 0,100 |
+
+(2012–2026'da üçlü birleşim AUC 0,834 / 0,806.)
+
+**Yorum.**
+- **Dikkat çekici bulgu:** SPK etiketini hiç görmeyen, yalnız "büyük düşüş gelecek mi?" sorusunu
+  öğrenen model, SPK vakalarını sıralamada PU'ya çok yakın buluyor (AUC 0,808 / 0,833). Fiyattan
+  tanımlanan çöküş riski ile SPK vakaları büyük ölçüde örtüşüyor.
+- Bu, kendi kriterlerimizle pompala-boşalt etiketi üretme fikrini (MEL-32) destekliyor: fiyat
+  temelli etiket, SPK etiketiyle aynı yöne bakıyor.
+- Ama listenin üstünde PU daha iyi, birleşime katkı da anlamlı değil.
+- **Karar: eklenmedi.** Kod depoya alınmadı.
+
 ## Deneme (25.11.2026): otomatik kodlayıcı ile anomali — Isolation Forest'tan zayıf, birleşime katkı yok (Linear MEL-86)
 
 **Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):

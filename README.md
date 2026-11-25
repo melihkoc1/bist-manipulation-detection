@@ -85,6 +85,7 @@ results. Code for failed ideas was not kept; all numbers are in the
 | Chart-shape similarity to past SPK cases (DTW nearest neighbours) | Alone twice as good as random but well below PU; no gain in the ensemble (the shape is already in the features) |
 | Deep learning (small 1D CNN on the raw 60-day series) | Alone significantly behind PU; no gain in the ensemble: with ~125 cases hand-crafted features work better |
 | Autoencoder anomaly detection (unsupervised) | Significantly weaker than Isolation Forest (AUC −0.042); no gain in the ensemble: unusual is not the same as manipulated |
+| "When will it crash?" model (predicts a ≥40% drop in 60 days, no SPK labels) | Ranks SPK cases almost as well as PU (AUC 0.808 vs 0.833) without seeing them, but no significant gain in the ensemble |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
 likely need new information (broker-level "AKD" data) or more pump-and-dump labels.
