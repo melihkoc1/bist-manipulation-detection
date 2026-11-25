@@ -80,6 +80,7 @@ Kural + PU birleşimi için, 2017–2026.
 | PU içinde LightGBM yerine Random Forest / Extra Trees | PU tek başına AUC +0,02 (anlamlı), ama listenin üstü ve kurallarla birleşim değişmedi |
 | Üçlü birleşim (Kural + PU-LightGBM + PU-Random Forest) | AUC 0,849 → 0,856 (anlamlı, küçük) ama ilk 20'de yakalama artmadı; ana model değişmedi |
 | Geçmiş SPK vakalarına grafik şekli benzerliği (DTW, en yakın komşu) | Tek başına rastgelenin 2 katı ama PU'nun çok gerisinde; birleşime katkı yok (şekil bilgisi göstergelerde zaten var) |
+| Derin öğrenme (ham 60 günlük seriden küçük 1B CNN) | Tek başına PU'nun anlamlı gerisinde; birleşime katkı yok: ~125 vakayla elle yazılmış göstergeler daha verimli |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla
 yeni bilgiden (aracı kurum düzeyinde "AKD" verisi) veya daha çok pompala-boşalt

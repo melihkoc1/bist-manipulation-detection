@@ -83,6 +83,7 @@ results. Code for failed ideas was not kept; all numbers are in the
 | Random Forest / Extra Trees instead of LightGBM inside PU | PU alone AUC +0.02 (significant), but no change at the top of the list or in the ensemble with rules |
 | Three-way ensemble (rules + PU-LightGBM + PU-Random Forest) | AUC 0.849 → 0.856 (significant, small) but top-20 recall did not improve; main model unchanged |
 | Chart-shape similarity to past SPK cases (DTW nearest neighbours) | Alone twice as good as random but well below PU; no gain in the ensemble (the shape is already in the features) |
+| Deep learning (small 1D CNN on the raw 60-day series) | Alone significantly behind PU; no gain in the ensemble: with ~125 cases hand-crafted features work better |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
 likely need new information (broker-level "AKD" data) or more pump-and-dump labels.

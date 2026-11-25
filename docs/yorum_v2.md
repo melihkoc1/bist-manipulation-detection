@@ -3,6 +3,36 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (25.11.2026): derin öğrenme (1B CNN, ham 60 günlük seri) — tek başına zayıf, birleşime katkı yok (Linear MEL-85)
+
+**Fikir.** Göstergeleri elle tasarlamak yerine, modelin ham seriden kendisinin öğrenmesi.
+
+**Tasarım** (sonuçlara bakılmadan sabitlendi, Linear'a yazıldı):
+- Girdi: her haftanın son işlem gününde son 60 işlem günü, 4 kanal: günlük getiri, hacim / pencere
+  medyanı, kapanışın gün aralığındaki yeri, XU100'e göre fazla getiri.
+- Model: küçük 1B evrişimli ağ (~6 bin parametre).
+- Eğitim: her yıl Y için yalnız ≤ Y−1 haftaları; pozitif = Y−1 sonuna kadar açıklanmış vaka
+  haftaları. Ağırlıklı BCE, 5 tur, 3 tohumun ortalaması. Ayar araması yok.
+- Ortama torch 2.15 (CPU) kuruldu.
+
+**Sonuç** (2017–2026, deney − ana, eşli bootstrap):
+
+| | AUC | yakalama@20 | İlk 10 isabeti |
+|---|---|---|---|
+| CNN tek başına / PU | 0,771 / 0,833 (**−0,062**) | 0,488 / 0,624 (**−0,116**) | 0,087 / 0,102 |
+| Kural + CNN / ana model | 0,835 / 0,849 (−0,015) | 0,610 / 0,672 (**−0,074**) | 0,093 / 0,100 |
+| **Kural + PU + CNN / ana model (birincil)** | 0,858 / 0,849 (+0,008 [−0,005, +0,021]) | 0,650 / 0,672 (−0,033) | 0,104 / 0,100 |
+
+Kalın: anlamlı.
+
+**Yorum.**
+- Ham seriden öğrenen ağ rastgelenin belirgin üstünde (yakalama 0,488; rastgele 0,236) ama elle
+  tasarlanmış göstergelerle çalışan PU modelinin anlamlı gerisinde.
+- Üçlü birleşimde AUC hafif artıyor ama anlamlı değil, listenin üstü iyileşmiyor.
+- ~125 vakayla derin bir modelin göstergeleri kendisi keşfetmesi zor; alan bilgisiyle yazılmış
+  göstergeler daha verimli.
+- **Karar: eklenmedi.** Kod depoya alınmadı.
+
 ## Deneme (25.11.2026): SPK vakalarına şekil benzerliği (DTW, en yakın komşu) — tek başına sinyal var, birleşime katkı yok (Linear MEL-84)
 
 **Fikir.** Her hissenin son 60 günlük fiyat ve hacim grafiğini, o tarihte bilinen SPK vakalarının
