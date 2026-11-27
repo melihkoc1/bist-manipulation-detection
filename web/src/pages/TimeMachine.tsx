@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { addDays, EXAMPLES, useIndex, useJson, useStock, weekMonday, type Index, type ListRow, type WeekEntry } from "../data";
+import { addDays, EXAMPLES, isNewIpo, useIndex, useIpo, useJson, useStock, weekMonday, type Index, type ListRow, type WeekEntry } from "../data";
 import { useT } from "../i18n";
 import { Page } from "../components/Layout";
 import { Arrow, Cal, ChevL, ChevR, Clock, Warn } from "../components/Icons";
@@ -37,6 +37,7 @@ function TM({ idx }: { idx: Index }) {
   const selT = sp.get("sec") && rows.some((r) => r[0] === sp.get("sec")) ? sp.get("sec")! : (rows.find((r) => r[4] === "in") ?? rows[0])?.[0];
   const sel = rows.find((r) => r[0] === selT);
   const names = useMemo(() => new Map(idx.stocks.map((s) => [s.t, s.name])), [idx]);
+  const ipo = useIpo().data;
 
   const set = (p: Record<string, string | null>) => {
     const n = new URLSearchParams(sp);
@@ -163,7 +164,7 @@ function TM({ idx }: { idx: Index }) {
                   <tbody>
                     {rows.map((r) => (
                       <Row key={r[0]} r={r} name={names.get(r[0]) ?? ""} on={r[0] === selT} cut={k === 50 && r[1] === 21}
-                           thr={idx.rules} pick={() => set({ sec: r[0] })} />
+                           thr={idx.rules} pick={() => set({ sec: r[0] })} ipo={isNewIpo(ipo, r[0], week)} />
                     ))}
                   </tbody>
                 </table>
@@ -176,7 +177,7 @@ function TM({ idx }: { idx: Index }) {
               <h2 id="ls-h" style={{ fontSize: 16, fontWeight: 600 }}>{f.L(`Şüphe listesi · ilk ${k}`, `Suspicion list · top ${k}`)}</h2>
               <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
                 {rows.map((r) => (
-                  <MobileCard key={r[0]} r={r} name={names.get(r[0]) ?? ""} open={r[0] === sp.get("sec")} idx={idx} week={week}
+                  <MobileCard key={r[0]} r={r} name={names.get(r[0]) ?? ""} open={r[0] === sp.get("sec")} idx={idx} week={week} ipo={isNewIpo(ipo, r[0], week)}
                               toggle={() => set({ sec: r[0] === sp.get("sec") ? "" : r[0] })} />
                 ))}
               </ol>
@@ -191,7 +192,7 @@ function TM({ idx }: { idx: Index }) {
   );
 }
 
-function Row({ r, name, on, cut, thr, pick }: { r: ListRow; name: string; on: boolean; cut: boolean; thr: Record<string, number>; pick: () => void }) {
+function Row({ r, name, on, cut, thr, pick, ipo }: { r: ListRow; name: string; on: boolean; cut: boolean; thr: Record<string, number>; pick: () => void; ipo: boolean }) {
   const f = useT();
   return (
     <>
@@ -206,6 +207,7 @@ function Row({ r, name, on, cut, thr, pick }: { r: ListRow; name: string; on: bo
         <td style={{ fontWeight: 600 }} className="muted">{r[1]}</td>
         <td><button type="button" className="rowbtn" onClick={pick} aria-pressed={on} aria-label={f.L(`${r[0]} önizlemesini aç, sıra ${r[1]}`, `Open ${r[0]} preview, rank ${r[1]}`)}>
           <strong style={{ fontSize: 14, fontWeight: 700 }}>{r[0]}</strong><span style={{ fontSize: 12 }} className="muted">{name}</span>
+          {ipo && <IpoBadge />}
         </button></td>
         <td><div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span className="bar" style={{ flex: 1 }}><span style={{ width: `${r[2] * 100}%` }} /></span>
@@ -253,7 +255,19 @@ function Preview({ idx, row, name, week, n }: { idx: Index; row: ListRow; name: 
   );
 }
 
-function MobileCard({ r, name, open, idx, week, toggle }: { r: ListRow; name: string; open: boolean; idx: Index; week: string; toggle: () => void }) {
+/** Halka arzın ilk 60 işlem günü: PU modeli bu dönemde boş alarm eğiliminde (MEL-92). */
+function IpoBadge() {
+  const f = useT();
+  return (
+    <span className="badge b-gray" style={{ alignSelf: "flex-start" }}
+          title={f.L("Halka arzın ilk 60 işlem günü. Bu dönemde fiyat ve hacim doğal olarak oynak; listeye giren yeni halka arzlar geçmişte çoğunlukla boş alarm oldu.",
+                     "First 60 trading days after the IPO. Price and volume are naturally volatile; new IPOs on the list were mostly false alarms in the past.")}>
+      {f.L("Yeni halka arz", "New IPO")}
+    </span>
+  );
+}
+
+function MobileCard({ r, name, open, idx, week, toggle, ipo }: { r: ListRow; name: string; open: boolean; idx: Index; week: string; toggle: () => void; ipo: boolean }) {
   const f = useT();
   const st = useStock(open ? r[0] : null);
   return (
@@ -262,7 +276,7 @@ function MobileCard({ r, name, open, idx, week, toggle }: { r: ListRow; name: st
         <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
           <span style={{ width: 22, fontSize: 14, fontWeight: 600 }} className="muted">{r[1]}</span>
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-            <strong style={{ fontSize: 15 }}>{r[0]}</strong>
+            <strong style={{ fontSize: 15 }}>{r[0]}{ipo && <> <IpoBadge /></>}</strong>
             <span style={{ fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} className="muted">{name}</span>
           </div>
           <SpkBadge link={r[4]} days={r[5]} short />

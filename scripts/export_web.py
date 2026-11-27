@@ -30,7 +30,7 @@ from bistmd.eval import weekly as W  # noqa: E402
 from bistmd.features import kap_content  # noqa: E402
 from bistmd.labels.windows import case_windows  # noqa: E402
 from bistmd.models.core import RuleScore  # noqa: E402
-from bistmd.paths import DB_PATH, INTERIM, ROOT  # noqa: E402
+from bistmd.paths import DB_PATH, INTERIM, RAW, ROOT  # noqa: E402
 
 OUT = ROOT / "web" / "public" / "data"
 SCORES = INTERIM / "scores_v2"
@@ -309,6 +309,37 @@ def export_live(with_lists: bool = True) -> None:
     })
 
 
+def export_ipo() -> None:
+    """Yeni halka arzlar (MEL-92): hisse → [ilk işlem günü, 60. işlem günü | null].
+
+    İlk 60 işlem gününde PU modeli boş alarm eğiliminde; listelerde bilgi olarak gösterilir.
+    Veri başlangıcından (2010-04) 30 gün sonra işlem görmeye başlayan hisseler halka arz sayılır.
+    Kaynak: tarihsel fiyatlar + canlı test fiyat kopyaları (yeni halka arzlar için).
+    """
+    days: dict[str, set] = {}
+    for f in (RAW / "prices_isyatirim").glob("*.parquet"):
+        d = pd.read_parquet(f, columns=["date", "close"]).dropna(subset=["close"])["date"]
+        days.setdefault(f.stem, set()).update(d)
+    hist = set(days)
+    live_starts = {}
+    for f in sorted((ROOT / "data" / "live" / "prices").glob("*.parquet")):
+        lp = pd.read_parquet(f, columns=["ticker", "date", "close"]).dropna(subset=["close"])
+        live_starts[f.stem] = lp["date"].min()
+        for t, g in lp.groupby("ticker"):
+            days.setdefault(t, set()).update(g["date"])
+    first_live = min(live_starts.values()) if live_starts else None
+    start = min(min(v) for v in days.values() if v) + pd.Timedelta(days=30)
+    out = {}
+    for t, v in days.items():
+        d = sorted(v)
+        if not d or d[0] <= start:
+            continue
+        if t not in hist and first_live is not None and d[0] <= first_live:
+            continue  # canlı kopyanın başlangıcı, gerçek halka arz değil
+        out[t] = [iso(d[0]), iso(d[59]) if len(d) >= 60 else None]
+    dump(OUT / "ipo.json", out)
+
+
 def export_alt() -> None:
     """Denenen diğer modeller (MEL-81…87, MEL-32): scripts/alt_models.py çıktısı → alt_models.json."""
     src = RESULTS / "alt_models.csv"
@@ -332,7 +363,8 @@ def main() -> None:
     if "--live" in sys.argv:  # yalnız canlı test özeti (tam dışa aktarım ~dakikalar sürer)
         OUT.mkdir(parents=True, exist_ok=True)
         export_live(with_lists="--no-lists" not in sys.argv)
-        print("live.json yazıldı")
+        export_ipo()
+        print("live.json, ipo.json yazıldı")
         return
     t0 = time.time()
     if OUT.exists():
@@ -368,6 +400,7 @@ def main() -> None:
     dump(OUT / "index.json", index)
     export_live()
     export_alt()
+    export_ipo()
     size = sum(f.stat().st_size for f in OUT.rglob("*.json")) / 1e6
     print(f"bitti: {len(weeks)} hafta, {len(stocks)} hisse, {size:.0f} MB → {OUT.relative_to(ROOT)} "
           f"({time.time() - t0:.0f} sn)")

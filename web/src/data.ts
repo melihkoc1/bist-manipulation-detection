@@ -79,6 +79,16 @@ export function useJson<T>(path: string | null): Loadable<T> {
 export const useIndex = () => useJson<Index>("index.json");
 export const useStock = (t: string | null) => useJson<StockData>(t ? `stocks/${t}.json` : null);
 
+/** Yeni halka arzlar (MEL-92): hisse → [ilk işlem günü, 60. işlem günü | null (henüz dolmadı)]. */
+export type IpoMap = Record<string, [string, string | null]>;
+export const useIpo = () => useJson<IpoMap>("ipo.json");
+/** Hafta (cuma bitişli), hissenin ilk 60 işlem gününe değiyor mu? */
+export function isNewIpo(ipo: IpoMap | undefined, t: string, weekEnd: string): boolean {
+  const v = ipo?.[t];
+  if (!v) return false;
+  return weekEnd >= v[0] && (v[1] === null || addDays(weekEnd, -4) <= v[1]);
+}
+
 /** Zaman makinesi örnekleri: vakanın SPK döneminde en üst sıraya çıktığı hafta (Kural + PU). */
 export const EXAMPLES = [
   { t: "IZFAS", week: "2018-06-01" },
