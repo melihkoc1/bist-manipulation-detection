@@ -3,6 +3,53 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Analiz (27.11.2026): KAP haberlerinin alarmlara göre zamanlaması — isabeti boş alarmdan ayırmıyor (Linear MEL-94)
+
+**Soru.** Haber sisteminin ilk adımı. Bir alarmda şirkete ait KAP haberi yükselişten önce mi, yükseliş
+sırasında mı geliyor, hiç yok mu? Bu, SPK vakası olan alarmlarda (isabet) boş alarmlardan farklı mı?
+Model değişmedi; KAP gösterge olarak değil, bağlam olarak incelendi (KAP sayıları 19.10.2026'da gösterge
+olarak denenmiş, katkı vermemişti).
+
+**Tasarım (sonuçtan önce MEL-94'te).** Kural + PU dürüst skorları, 2017–2026 haftalık ilk 20 (9.713 alarm:
+806 isabet, 8.907 boş; belirsizler dışarıda). Rastgele taban: ilk 20 dışından 51.100 hisse-hafta.
+Yükselişin başladığı gün t0 = hafta sonundan geriye 20 işlem günündeki en düşük kapanış. Haber günü
+= etkili gün (18:00 sonrası yayın ertesi işlem günü). Güçlü haber = iş, kurumsal işlem, sermaye, kazanç
+bilgisi; fiyatın sonucu olan bildirimler (olağan dışı hareket, net aktif değer, devre kesici) haber
+sayılmadı. Sınıflar: **A** [t0−10, t0] içinde güçlü haber; **B** A değil, yükseliş sırasında haber;
+**C** hiç güçlü haber yok. Fark testi: hisse düzeyinde küme bootstrap (2.000).
+
+**Sonuç (ana, önce 10 işlem günü).**
+
+| Sınıf | İsabet | Boş alarm | Rastgele | Fark (isabet − boş) [%95 GA] | Sınıf içi isabet |
+|---|---|---|---|---|---|
+| A haberle başlayan | 0,298 | 0,337 | 0,328 | −0,040 [−0,096, +0,017] anlamsız | 0,074 |
+| B yükseliş sırasında haber | 0,236 | 0,244 | 0,157 | −0,008 [−0,053, +0,037] anlamsız | 0,080 |
+| C habersiz | 0,467 | 0,419 | 0,515 | +0,048 [−0,019, +0,120] anlamsız | 0,092 |
+
+- Yön beklenen gibi (isabetler biraz daha "habersiz", biraz daha az "haberle başlayan") ama hiçbir fark
+  anlamlı değil. Hipotezlerin üçü de (H1–H3) desteklenmedi.
+- Hem isabet hem boş alarmda yükseliş medyanı ~%41 ve t0 hafta sonundan ~18 gün önce: alarmlar zaten
+  büyük yükselişler; haber sırası ikisinde de benzer.
+- Sonraki 10 gün güçlü haber: isabet 0,295, boş 0,339, rastgele 0,309 (fark −0,044 [−0,098, +0,013]).
+- Alarmlar rastgeleye göre daha az habersiz (0,42–0,47 / 0,52) ve daha sık "yükseliş sırasında haberli"
+  (0,24 / 0,16).
+- Ek (tasarımda test edilmedi, yalnız betimleme): zayıf haber (yönetim değişikliği, finansman, dava…)
+  isabetlerde daha seyrek (0,134 / 0,221); olağan dışı hareket bildirimi isabetlerde biraz daha sık
+  (0,421 / 0,365; rastgele 0,050); söylenti açıklaması çok seyrek (%1–2).
+
+**Dönem ve duyarlılık.** 2017–2021 ve 2022–2026 ayrı; önce penceresi 5 ve 20 gün; güçlü + zayıf haber;
+sonra penceresi 5 ve 20 gün: hepsinde aynı yön, hiçbiri anlamlı değil (en yakın: güçlü + zayıf haber ile
+C farkı +0,064 [−0,004, +0,133]).
+
+**İkincil (sıralama).** İlk 20 içinde A sınıfını sona itmek ilk 10 isabetini 0,0949 → 0,0877 düşürdü
+(fark −0,0072 [−0,0127, −0,0016], anlamlı, zararlı). Eklenmedi.
+
+**Karar.** KAP haberinin zamanlaması isabeti boş alarmdan ayırmıyor; modele ya da sıralamaya eklenmedi.
+Tez açısından bulgu: SPK'nın cezalandırdığı yükselişler KAP haber akışı bakımından diğer büyük
+yükselişlerden farklı görünmüyor; yani "haberli yükseliş = masum" denemez. Haber bağlamının sitede bilgi
+amaçlı gösterilmesi kullanıcı kararına bırakıldı. Kod: `scripts/news_timing.py` (analiz, depoda).
+Sınırlılık: yalnız KAP; KAP dışı haber ve sosyal medya yok, sektör verisi yok.
+
 ## Analiz (27.11.2026): yeni halka arzların ilk 60 günü — PU modeli onları fazla öne çıkarıyor, birleşimde etki küçük (Linear MEL-92)
 
 **Soru.** Yeni halka arz olmuş bir hisse için model ne diyor? İlk günlerde fiyat ve hacim doğal olarak

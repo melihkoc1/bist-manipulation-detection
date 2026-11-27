@@ -87,6 +87,7 @@ Kural + PU birleşimi için, 2017–2026.
 | Aynı günlerde birlikte sıçrayan hisseler ağı | Kazanç yok: SPK vakaları benzer yükselişlerden daha *yalnız* hareket ediyor; birlikte sıçrama piyasa / sektör coşkusu |
 | Göstergeleri benzer büyüklükteki hisselere göre sıralamak (günlük büyüklük dilimleri) | Kazanç yok; göstergeler zaten hissenin kendi geçmişine göre ölçülüyor, 2022'deki zayıflık da düzelmedi |
 | Konformal "yeni vakaların %80'i bu eşiği geçer" güvencesi | 2017–2021'de tuttu (%76), 2022 sonrası tutmadı (%63); rejim değişimi varsayımı bozuyor. Kalibre olasılıklar taban orandan biraz iyi ama düşük; yalnız alt sınır |
+| KAP haberinin yükselişe göre zamanlaması (önce / sırasında / habersiz) | SPK vakası olan alarmlarla boş alarmlar arasında anlamlı fark yok; "haberle başlayan" alarmları geri itmek isabeti düşürdü |
 | Halka arzın ilk 60 işlem gününü dışarıda bırakmak | Ana modelde değişiklik yok; PU tek başına yeni halka arzları fazla öne çıkarıyor (çoğu boş alarm), kurallar bunu yumuşatıyor |
 
 **Çıkarım:** günlük fiyat ve hacim verisiyle model sınırına yakın. Kalan kazanç büyük olasılıkla

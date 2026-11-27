@@ -90,6 +90,7 @@ results. Code for failed ideas was not kept; all numbers are in the
 | Network of stocks surging on the same days | No gain: SPK cases move more *alone* than similar rallies; co-surges reflect market or sector moods |
 | Indicators ranked against similar-size peers (daily size quintiles) | No gain; indicators are already measured against each stock's own history, and the 2022 weakness did not improve |
 | Conformal "80% of new cases pass this threshold" guarantee | Held in 2017–2021 (76%) but not after 2022 (63%); regime changes break the assumption. Calibrated probabilities beat the base rate slightly but run low, so they are a lower bound only |
+| Timing of KAP news relative to the rise (before / during / none) | No significant difference between alarms with SPK cases and false alarms; pushing news-led alarms down lowered precision |
 | Excluding the first 60 trading days after an IPO | No change for the main model; the PU model alone over-ranks new IPOs (mostly false alarms) and the rules soften this |
 
 **Takeaway:** with daily price and volume data the model is near its limit. Further gains most
