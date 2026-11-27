@@ -155,3 +155,17 @@ a.casecard:hover { border-color: var(--line-2); }
   .kv { grid-template-columns: 110px 1fr; }
   .badge { white-space: normal; }
 }
+
+/* Denemeler sayfası: açılır kartlar */
+details.exp > summary { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; list-style: none; min-height: 52px; }
+details.exp > summary::-webkit-details-marker { display: none; }
+details.exp > summary::after { content: ""; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--faint); border-bottom: 2px solid var(--faint); transform: rotate(45deg); margin: -4px 4px 0 4px; transition: transform .15s; }
+details.exp[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+details.exp .exp-title { flex: 1; min-width: 0; font-weight: 600; font-size: 15px; }
+details.exp > summary:hover { background: var(--surface-2); border-radius: 12px; }
+details.exp > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 12px; }
+@media (max-width: 640px) {
+  details.exp > summary { flex-wrap: wrap; gap: 8px; }
+  details.exp .exp-title { flex: 1 1 100%; order: 3; }
+  details.exp > summary > span:nth-child(3) { margin-left: auto; }
+}

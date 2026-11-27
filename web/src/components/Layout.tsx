@@ -17,6 +17,7 @@ export function Layout() {
     ["/hisse", "Hisse detayı", "Stock detail"],
     ["/vakalar", "Vaka çalışmaları", "Case studies"],
     ["/sonuclar", "Sonuçlar", "Results"],
+    ["/denemeler", "Denemeler", "Experiments"],
     ["/canli-test", "Canlı test", "Live test"],
     ["/yontem", "Yöntem", "Method"],
     ["/hakkinda", "Hakkında", "About"],

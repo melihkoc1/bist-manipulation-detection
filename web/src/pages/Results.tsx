@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { getResult, useIndex, useJson, type Index } from "../data";
 import { useT } from "../i18n";
 import { Page } from "../components/Layout";
@@ -331,7 +332,7 @@ function Body({ idx }: { idx: Index }) {
       <section className="card" aria-labelledby="log-h" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <h2 id="log-h" style={{ fontSize: 18, fontWeight: 600 }}>{f.L("Deneme günlüğü", "Experiment log")}</h2>
-          <p style={{ fontSize: 14 }} className="muted">{f.L("Denenen her fikir, işe yarasın ya da yaramasın, burada kayıtlı. Ayrıntılar: docs/yorum_v2.md.", "Every idea tried, whether it worked or not. Details: docs/yorum_v2.md.")}</p>
+          <p style={{ fontSize: 14 }} className="muted">{f.L("Denenen her fikir, işe yarasın ya da yaramasın, burada kayıtlı. Her birinin nedeni, ölçümü ve kararı: ", "Every idea tried, whether it worked or not. Why, how and what was decided for each: ")}<Link to="/denemeler">{f.L("Denemeler sayfası", "Experiments page")}</Link>.</p>
         </div>
         <div className="tbl-wrap">
           <table className="t">

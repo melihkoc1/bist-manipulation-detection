@@ -14,6 +14,7 @@ import StockDetail from "./pages/StockDetail";
 import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
 import Results from "./pages/Results";
+import Experiments from "./pages/Experiments";
 import LiveTest from "./pages/LiveTest";
 import LiveList from "./pages/LiveList";
 import Method from "./pages/Method";
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="vakalar" element={<Cases />} />
             <Route path="vakalar/:id" element={<CaseDetail />} />
             <Route path="sonuclar" element={<Results />} />
+            <Route path="denemeler" element={<Experiments />} />
             <Route path="canli-test" element={<LiveTest />} />
             <Route path="yontem" element={<Method />} />
             <Route path="hakkinda" element={<About />} />
