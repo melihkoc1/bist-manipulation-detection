@@ -3,6 +3,59 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Deneme (27.11.2026): olasılık kalibrasyonu ve konformal eşik — kalibrasyon kısmen kullanılabilir, "garanti" tutmuyor (Linear MEL-90)
+
+**Fikir.** Sıra yerine "bu hisse-haftanın SPK vaka penceresinde olma olasılığı ~%X" demek ve
+"yeni vakaların en az %80'i bu eşiği geçer" türünden bir güvence vermek. Model değişmedi; yalnız
+Kural + PU haftalık yüzdeliğinin anlamı ölçüldü (`scripts/calibration.py`).
+
+**Tasarım** (sonuçtan önce Linear'a yazıldı):
+- Etiket: hisse-hafta ana set vaka penceresindeyse 1, hiçbir pencereye değmiyorsa 0.
+- Dürüst: Y yılının kalibratörü ve eşiği yalnız Y−1 sonuna kadarki haftalar ve o tarihe kadar SPK'nın
+  açıkladığı vakalarla kuruldu.
+- Kalibrasyon: izotonik regresyon (birincil), Platt (ikincil), sabit geçmiş taban oranı (karşılaştırma).
+- Konformal eşik: geçmişte açıklanmış vakaların pencere içindeki en yüksek haftalık yüzdeliklerinin
+  %20'lik dilimi; hedef, yeni vakaların ≥ %80'inin eşiği geçmesi.
+
+**Kalibrasyon** (2017–2026, 227.395 hisse-hafta, gerçek oran %2,91):
+
+| | Ort. tahmin | Brier | Log kaybı | ECE |
+|---|---|---|---|---|
+| Sabit taban oranı | %1,83 | 0,02839 | 0,1359 | 0,0125 |
+| İzotonik | %1,83 | 0,02821 | 0,1344 | 0,0108 |
+| Platt | %1,82 | 0,02828 | 0,1340 | 0,0109 |
+
+- Önceden yazılan kuralı geçiyor: Brier ve log kaybı taban orandan iyi, ECE (0,011) taban oranın
+  yarısından (0,015) küçük. 2017–2021 ve 2022–2026 ayrı ayrı da aynı.
+- Ama iyileşme küçük ve olasılıklar **sistematik olarak düşük**: tahmin ortalaması %1,8, gerçek %2,9.
+  Nedeni etiket gecikmesi: SPK kararları yıllar sonra geldiği için kalibratör geçmişte henüz
+  açıklanmamış vakaları 0 sayıyor. Bu yüzden olasılıklar **alt sınır** olarak okunmalı.
+- Ayrıştırma gücü sınırlı: en üst %1'lik yüzdelikte tahmin %9,3, gerçek %11,3; en üst %5'te %6,2 / %7,7;
+  alt dilimlerin gerçek oranı (%2–3) birbirine yakın. Model tek tek hisse-haftalar için yüksek
+  olasılık üretmiyor; değeri listenin en üstünde.
+
+**Konformal eşik** (hedef kapsama %80):
+
+| | Gerçekleşen vaka kapsaması | Eşiği geçen hisse-hafta oranı |
+|---|---|---|
+| 2017–2021 (88 vaka) | %76,1 | %6,9 |
+| 2022–2026 (35 vaka) | %62,9 | %10,3 |
+| 2017–2026 (123 vaka) | %72,4 | %8,6 |
+
+- Yıl bazında kapsama %46 ile %100 arasında oynuyor (2020: %48, 2022: %46). Konformal güvence,
+  geçmiş ve gelecek vakaların "değiştirilebilir" olmasını varsayıyor; piyasa rejimi değişince
+  (2020 pandemi yükselişi, 2022 enflasyon yükselişi) bu varsayım bozuluyor.
+- 2022–2026'da hedefin 10 puandan fazla altında kaldı; kural gereği tezde "garanti" diye sunulmayacak.
+- Hafta düzeyindeki eşik (vaka haftalarının %80'i) kapsamayı tutturuyor (%75), ama hisse-haftaların
+  %65'i eşiği geçiyor; pratikte anlamsız.
+
+**Karar.**
+- Kalibre edilmiş olasılık tezde yöntem olarak anlatılabilir: "Üst %1'lik dilimdeki bir hisse-haftanın
+  vaka penceresinde olma olasılığı en az ~%9–11, taban oranın ~4 katı."
+- Konformal eşik yalnız belgelendi; güvence olarak sunulmayacak.
+- Canlı ekranda olasılık gösterimi kullanıcı onayına bağlı; şimdilik yapılmadı.
+- `scripts/calibration.py` analiz aracı olarak depoda kaldı.
+
 ## Deneme (25.11.2026): büyüklük akranlarına göre göstergeler — kazanç yok (Linear MEL-89)
 
 **Fikir.** Göstergeleri tüm piyasa yerine benzer büyüklükteki hisselere göre ölçmek. Küçük bir
