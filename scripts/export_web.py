@@ -175,6 +175,14 @@ def classify_kap(kap: pd.DataFrame) -> pd.Series:
     return cat.map(KAP_GROUP).fillna("other")
 
 
+def kap_row(x) -> list:
+    """[yayın günü, konu, grup, bildirim no, (özet: yalnız haber / söylenti / fiyat açıklamasında)]."""
+    row = [iso(x.published_at), x.subject or "", x.grp, int(x.disclosure_id)]
+    if x.grp != "other" and isinstance(x.summary, str) and x.summary.strip():
+        row.append(x.summary.strip()[:200])
+    return row
+
+
 def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisions: pd.DataFrame,
                   shap: dict) -> list[dict]:
     wk = load_week_scores("4_kural_pu")
@@ -210,7 +218,7 @@ def export_stocks(names: dict, rules: pd.DataFrame, cases: pd.DataFrame, decisio
         cs = [{"id": x.case_id, "start": iso(x.start), "end": iso(x.end), "known": bool(x.known_period),
                "core": bool(x.core), "first": iso(x.first_decision)} for x in c.itertuples()]
         k = k_by.get(t, pd.DataFrame())
-        kp = [[iso(x.published_at), x.subject or "", x.grp, int(x.disclosure_id)] for x in k.itertuples()]
+        kp = [kap_row(x) for x in k.itertuples()]
         obj = {"ticker": t, "name": names.get(t, ""),
                "prices": {"d": [iso(x) for x in p["date"]], "c": [r(x, 4) for x in p["close"]],
                           "v": [None if pd.isna(x) else int(x) for x in p["value_try"]]},
@@ -298,6 +306,7 @@ def export_live(with_lists: bool = True) -> None:
             src = ROOT / "data" / "live" / "weeks" / f"{r_['hafta_sonu']}_ilk20.csv"
             if src.exists():
                 shutil.copyfile(src, OUT / "live" / src.name)
+        export_live_kap(distinct)
     dump(OUT / "live.json", {
         "csv": with_lists,
         "frozen": man["dondurma_zamani_utc"][:10], "dataEnd": man["veri_son_gun"],
@@ -307,6 +316,19 @@ def export_live(with_lists: bool = True) -> None:
                   for r_ in rows],
         "distinct": len(distinct),
     })
+
+
+def export_live_kap(tickers: set) -> None:
+    """Canlı listelerdeki hisselerin güncel KAP bildirimleri (scripts/live_kap.py) → live/kap.json, yalnız yerel."""
+    src = ROOT / "data" / "live" / "kap" / "kap.parquet"
+    if not src.exists():
+        return
+    k = pd.read_parquet(src)
+    k = k[k["tickers"].notna()].assign(ticker=lambda d: d["tickers"].str.split(",")).explode("ticker")
+    k["ticker"] = k["ticker"].str.strip()
+    k = k[k["ticker"].isin(tickers)].sort_values("published_at", ascending=False)
+    k["grp"] = classify_kap(k)
+    dump(OUT / "live" / "kap.json", {t: [kap_row(x) for x in g.itertuples()] for t, g in k.groupby("ticker")})
 
 
 def export_ipo() -> None:

@@ -237,6 +237,7 @@ Haziran 2027'de yeni SPK kararlarıyla karşılaştırılacak. Değerlendirme pl
 python scripts/live_freeze.py          # bir kez (yapıldı): PU modelini eğitip dondurur
 python scripts/live_week.py            # her hafta sonu: geçen haftanın listesini kaydeder (~25 dk)
 python scripts/live_week.py --verify   # tüm parmak izlerini denetler
+python scripts/live_kap.py             # isteğe bağlı: listelerin altındaki not için güncel KAP bildirimleri
 python scripts/export_web.py --live    # sitede yalnız "Canlı test" sayfasını yeniler
 ```
 

@@ -211,7 +211,7 @@ function KapList({ d, from, to }: { d: StockData; from: string; to: string }) {
   const [inRange, setInRange] = useState(true);
   const list = useMemo(() => {
     const s = q.trim().toLocaleLowerCase("tr");
-    return d.kap.filter((k) => (cat === "all" || k[2] === cat) && (!s || k[1].toLocaleLowerCase("tr").includes(s))
+    return d.kap.filter((k) => (cat === "all" || k[2] === cat) && (!s || `${k[1]} ${k[4] ?? ""}`.toLocaleLowerCase("tr").includes(s))
       && (!inRange || (k[0] >= from && k[0] <= to)));
   }, [d, cat, q, inRange, from, to]);
   return (
@@ -235,7 +235,8 @@ function KapList({ d, from, to }: { d: StockData; from: string; to: string }) {
         {list.slice(0, n).map((k) => (
           <li key={k[3]} style={{ display: "grid", gridTemplateColumns: "100px 1fr auto", gap: 16, alignItems: "center", padding: "12px 4px", borderTop: "1px solid var(--line)", fontSize: 14 }}>
             <span className="muted">{f.date(k[0])}</span>
-            <a href={`https://www.kap.org.tr/tr/Bildirim/${k[3]}`} target="_blank" rel="noreferrer" style={{ color: "var(--text)", textDecoration: "none", fontWeight: 500, minWidth: 0, overflowWrap: "anywhere" }}>{k[1] || "—"}</a>
+            <a href={`https://www.kap.org.tr/tr/Bildirim/${k[3]}`} target="_blank" rel="noreferrer" style={{ color: "var(--text)", textDecoration: "none", fontWeight: 500, minWidth: 0, overflowWrap: "anywhere", display: "flex", flexDirection: "column", gap: 2 }}>
+              <span>{k[4] || k[1] || "—"}</span>{k[4] && k[1] && <span style={{ fontSize: 12, fontWeight: 400 }} className="faint">{k[1]}</span>}</a>
             <span className={KAP_CLS[k[2]]}>{f.L(...(KAP_CATS.find((c) => c[0] === k[2])!.slice(1) as [string, string]))}</span>
           </li>
         ))}

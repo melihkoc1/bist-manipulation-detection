@@ -6,6 +6,7 @@ import { Page } from "../components/Layout";
 import { Arrow, Cal, ChevL, ChevR, Clock, Warn } from "../components/Icons";
 import { Loading, MODEL_NAMES, Note, ReasonChips, ShapPanel, SpkBadge, SpkLegend, WhyPanel } from "../components/ui";
 import { MiniPrice } from "../components/charts";
+import { KapContext } from "../components/KapContext";
 
 const LENS = [10, 20, 50];
 
@@ -250,6 +251,7 @@ function Preview({ idx, row, name, week, n }: { idx: Index; row: ListRow; name: 
         <WhyPanel vals={row[3]} thr={idx.rules} compact />
         <ShapPanel shap={row[6]} feats={idx.shapFeats} compact />
       </div>
+      {st.data && <KapContext d={st.data} week={week} />}
       <Link to={`/hisse/${row[0]}?hafta=${week}`} className="btn primary" style={{ alignSelf: "stretch" }}>{f.L("Hisse detayına git", "Open stock detail")}<Arrow /></Link>
     </aside>
   );
@@ -295,6 +297,7 @@ function MobileCard({ r, name, open, idx, week, toggle, ipo }: { r: ListRow; nam
           <h3 style={{ fontSize: 14, fontWeight: 600 }}>{f.L("Neden şüpheli?", "Why suspicious?")}</h3>
           <WhyPanel vals={r[3]} thr={idx.rules} compact />
           <ShapPanel shap={r[6]} feats={idx.shapFeats} compact />
+          {st.data && <KapContext d={st.data} week={week} />}
           <Link to={`/hisse/${r[0]}?hafta=${week}`} className="btn primary">{f.L("Hisse detayına git", "Open stock detail")}</Link>
         </div>
       )}

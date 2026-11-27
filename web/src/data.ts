@@ -44,7 +44,8 @@ export interface StockData {
   prices: { d: string[]; c: (number | null)[]; v: (number | null)[] };
   ranks: RankRow[]; decisions: Decision[]; cases: StockCase[];
   shap?: Record<string, Shap>; // hafta sonu → PU katkıları (yalnızca ilk 50'ye giren haftalar)
-  kap: [string, string, "news" | "price" | "rumor" | "other", number][];
+  /** [yayın günü, konu, grup, bildirim no, özet (yalnız haber / söylenti / fiyat açıklaması)] */
+  kap: [string, string, "news" | "price" | "rumor" | "other", number, string?][];
 }
 
 const cache = new Map<string, Promise<unknown>>();

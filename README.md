@@ -248,6 +248,7 @@ the lists themselves stay local (`data/live/`).
 python scripts/live_freeze.py          # once (already done): trains and freezes the PU model
 python scripts/live_week.py            # every weekend: records last week's list (~25 min)
 python scripts/live_week.py --verify   # checks all fingerprints
+python scripts/live_kap.py             # optional: recent KAP disclosures for the note under each list
 python scripts/export_web.py --live    # refreshes only the site's "Live test" page
 ```
 

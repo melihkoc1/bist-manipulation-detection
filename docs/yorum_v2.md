@@ -46,8 +46,9 @@ C farkı +0,064 [−0,004, +0,133]).
 
 **Karar.** KAP haberinin zamanlaması isabeti boş alarmdan ayırmıyor; modele ya da sıralamaya eklenmedi.
 Tez açısından bulgu: SPK'nın cezalandırdığı yükselişler KAP haber akışı bakımından diğer büyük
-yükselişlerden farklı görünmüyor; yani "haberli yükseliş = masum" denemez. Haber bağlamının sitede bilgi
-amaçlı gösterilmesi kullanıcı kararına bırakıldı. Kod: `scripts/news_timing.py` (analiz, depoda).
+yükselişlerden farklı görünmüyor; yani "haberli yükseliş = masum" denemez. Kullanıcı kararıyla haber bağlamı sitede
+bilgi amaçlı gösteriliyor: Zaman Makinesi önizlemesinde son 30 günün KAP bildirimleri (yalnız o haftaya
+kadar yayımlananlar) ve yerel canlı listelerin altında aynı not (`scripts/live_kap.py`). Kod: `scripts/news_timing.py` (analiz, depoda).
 Sınırlılık: yalnız KAP; KAP dışı haber ve sosyal medya yok, sektör verisi yok.
 
 ## Analiz (27.11.2026): yeni halka arzların ilk 60 günü — PU modeli onları fazla öne çıkarıyor, birleşimde etki küçük (Linear MEL-92)
