@@ -3,6 +3,41 @@
 Sayılar `docs/sonuclar_v2.md` içinde (`scripts/evaluate_v2.py` ve `scripts/compare_v2.py` üretir,
 her çalıştırmada yeniden yazılır). Bu dosya elle tutulan yorumdur; scriptler dokunmaz.
 
+## Analiz (27.11.2026): yeni halka arzların ilk 60 günü — PU modeli onları fazla öne çıkarıyor, birleşimde etki küçük (Linear MEL-92)
+
+**Soru.** Yeni halka arz olmuş bir hisse için model ne diyor? İlk günlerde fiyat ve hacim doğal olarak
+oynak; geçmiş pencereler (60 gün) de henüz dolmamış.
+
+**Tanım.** Halka arz = ilk işlem günü veri başlangıcından (01.04.2010) 30 günden sonra olan hisse
+(389 hisse; 2021'de 53, 2023'te 56). "İlk 60 gün" = ilk 60 işlem günü. Model değişmedi; yalnız mevcut
+dürüst skorlar incelendi.
+
+**SPK vakaları.** Dönemi bilinen ana set vakalarından yalnız 15'i (2017 sonrası başlayan 132 vakadan 2'si)
+halka arzın ilk 60 gününde başlıyor. Manipülasyon vakaları genelde hisse bir süre işlem gördükten sonra.
+
+**İlk 60 gün hisse-haftalarının listelerdeki payı** (2017–2026; tüm hisse-haftalarda %1,4):
+
+| | İlk 20 listesindeki payı | Tüm haftalara göre | İlk 10 isabeti (yeni / diğer) |
+|---|---|---|---|
+| Kural | %1,2 | 0,8 kat | 0,027 / 0,072 |
+| PU | %7,0 (2021'de %26) | 4,9 kat | 0,016 / 0,109 |
+| Kural + PU (ana model) | %2,7 (2021'de %9) | 1,9 kat | 0,044 / 0,101 |
+
+- PU modeli yeni halka arzları belirgin biçimde öne çıkarıyor; bunlar çoğunlukla boş alarm. Yeni
+  hissede "olağan" seviye henüz oluşmadığı için göstergeler aşırı görünüyor.
+- Kurallar bu hisseleri öne çıkarmıyor; birleşim etkiyi yarıya indiriyor.
+
+**İlk 60 gün dışarıda bırakılınca** (yalnız değerlendirme, haftalık sıra yeniden hesaplandı):
+aynı 123 vakada AUC 0,849 → 0,850 (+0,001, anlamlı ama önemsiz), yakalama@20 0,672 → 0,672,
+ilk 10 isabeti 0,100 → 0,100. (Vaka sayısı değişince ham yakalama 0,683 görünüyor; bu 2 vakanın
+düşmesinden, eşli karşılaştırmada fark yok.)
+
+**Sonuç.**
+- Ana modelin metrikleri halka arzlardan etkilenmiyor; dışlama kuralı gerekmiyor.
+- Ama canlı listede yeni halka arz görülürse, bu durum boş alarm olasılığını artırıyor. Listede
+  "yeni halka arz (ilk 60 gün)" bilgisinin gösterilmesi yararlı olur; kararı kullanıcıya bırakıldı.
+- Tez için: "PU modeli kısa geçmişli hisselerde aşırı tepki veriyor; kurallarla birleşim bunu yumuşatıyor."
+
 ## Deneme (27.11.2026): olasılık kalibrasyonu ve konformal eşik — kalibrasyon kısmen kullanılabilir, "garanti" tutmuyor (Linear MEL-90)
 
 **Fikir.** Sıra yerine "bu hisse-haftanın SPK vaka penceresinde olma olasılığı ~%X" demek ve
